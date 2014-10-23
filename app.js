@@ -3,6 +3,10 @@ var express = require('express');
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
+var pub = require('redis').createClient(6379, 'matttest.redis.cache.windows.net', {auth_pass: 'uRW8g+U4kB7jFtncsH+mP5JYekHaPqFMmvad3wxFpNo=', return_buffers: true});
+var sub = require('redis').createClient(6379, 'matttest.redis.cache.windows.net', {auth_pass: 'uRW8g+U4kB7jFtncsH+mP5JYekHaPqFMmvad3wxFpNo=', return_buffers: true});
+var redis = require('socket.io-redis');
+io.adapter(redis({pubClient: pub, subClient: sub}));
 var port = process.env.PORT || 3000;
 
 server.listen(port, function () {
