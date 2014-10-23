@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/Colum-SMA-Dev/MediaHub",
   "dependencies": {
-    "express": "^4.9.8"
+    "express": "^4.9.8",
+    "socket.io": "^1.1.0"
   }
 }
