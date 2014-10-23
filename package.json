@@ -1,0 +1,22 @@
+{
+  "name": "MediaHub",
+  "version": "1.0.0",
+  "description": "MediaHub ========",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Colum-SMA-Dev/MediaHub.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Colum-SMA-Dev/MediaHub/issues"
+  },
+  "homepage": "https://github.com/Colum-SMA-Dev/MediaHub",
+  "dependencies": {
+    "express": "^4.9.8"
+  }
+}
