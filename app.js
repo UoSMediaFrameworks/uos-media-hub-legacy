@@ -1,3 +1,3 @@
 var hub = require('./src/hub');
     
-hub.start(3000);
+hub.start(process.env.PORT || 3000);
