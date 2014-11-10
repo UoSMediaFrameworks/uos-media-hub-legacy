@@ -1,5 +1,3 @@
-var should = require('should');
-
 describe('My dummy test', function() {
 	var val;
 

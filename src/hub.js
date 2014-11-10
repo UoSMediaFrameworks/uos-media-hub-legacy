@@ -6,15 +6,16 @@ var config = require('./config'),
     http = require('http'),
     path = require('path');
 
-module.exports = { 
-    start: function(port) {
+var hubPrototype = {
+    listen: function(port, callback) {
         var app = express(),
             server = http.Server(app),
             io = new Server(server);
 
-        server.listen(port);
+        server.listen(port, callback);
         console.log('hub listening on port ' + port);
 
+        this.server = server;
 
         // serve up the API library
         app.get('/hub-api.js', function(req, res) {
@@ -52,5 +53,14 @@ module.exports = {
                 }
             }, 3000);
         });
+    },
+    close: function(callback) {
+        this.server.close(callback);
+    }
+};
+
+module.exports = { 
+    createHub: function() {
+        return Object.create(hubPrototype);
     }
 };
