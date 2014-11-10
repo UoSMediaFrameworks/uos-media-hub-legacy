@@ -9,5 +9,5 @@ describe('My dummy test', function() {
 
 	it('should be true', function() {
 		as(val);
-	})
+	});
 });

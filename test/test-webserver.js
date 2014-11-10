@@ -1,7 +1,9 @@
 var hub = require(__dirname + '/../src/hub'),
-	http = require('http'),
+	http = require('q-io/http'),
 	assert = require('assert'),
 	util = require('util'),
+	fs = require('q-io/fs'),
+	q = require('q'),
 	port = 3333;
 
 describe('webserver', function () {
@@ -18,7 +20,7 @@ describe('webserver', function () {
 		});
 	});
 
-	/*
+	/*  
 	I should be using a done callback here, but for some reason
 	it doesn't get triggered when running under mocha, the server
 	get's forced to close anyways because the process exits.  This 
@@ -33,10 +35,12 @@ describe('webserver', function () {
 		assert(hubApp);
 	});
 
-	it('should serve the hub-api.js at /hub-api.js', function (done) {
-		http.get(util.format('http://localhost:%d/hub-api.js', port), function(res) {
-			assert.equal(200, res.statusCode);
-			done();
+	it('should serve the hub-api.js at /hub-api.js', function () {
+		return q.allSettled([
+			http.read(util.format('http://localhost:%d/hub-api.js', port)),
+			fs.read(__dirname + '/../public/hub-api.js')
+		]).spread(function(res, file) {
+			assert.equal(res.value.toString('utf-8'), file.value);
 		});
 	});
-});
+}); 
