@@ -8,7 +8,7 @@ Media Hub Client
 
 The hub serves a javascript library to be used for connecting back to the hub.  It is reachable at `http://<domain>:<port>/hub-api.js`.  
 
-##### HubClient(url, password, socketIoOpts, callback)
+##### `HubClient(url, password, socketIoOpts, callback)`
 
 Creates and returns a new instance of a HubClient.  
 
