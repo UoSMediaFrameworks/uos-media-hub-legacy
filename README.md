@@ -13,6 +13,10 @@ The hub serves a javascript library to be used for connecting back to the hub.  
 Creates and returns a new instance of a HubClient.  
 
 * `url` hosted location of hub
-* `password` configured password on the Hub
 * `socketIoOpts` object that will be passed to [socket.io client constructor](http://socket.io/docs/client-api/)
-* `callback` function that accepts a single argument.  Will be called with a boolean value of true or false for successful authentication with the hub
+
+##### `authenticate(password)`
+
+Returns a promise that is fulfilled on succesful authentication, and rejected on failed.
+
+* `password` configured password on the Hub
