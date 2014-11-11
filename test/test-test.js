@@ -1,4 +1,6 @@
-as = require('assert');
+'use strict';
+
+var assert = require('assert');
 
 describe('My dummy test', function() {
 	var val;
@@ -8,6 +10,6 @@ describe('My dummy test', function() {
 	});
 
 	it('should be true', function() {
-		as(val);
+		assert(val);
 	});
 });

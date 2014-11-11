@@ -1,3 +1,5 @@
+'use strict';
+
 var config = require('./config'),
     accessKey = config.secret,
     bcrypt = require('bcrypt'),
@@ -17,7 +19,6 @@ Hub.prototype.listen = function(port, callback) {
         io = new Server(server);
 
     server.listen(port, callback);
-    console.log('hub listening on port ' + port);
 
     this.server = server;
 

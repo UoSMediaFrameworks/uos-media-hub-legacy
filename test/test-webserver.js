@@ -1,13 +1,21 @@
+"use strict";
+
 var hub = require(__dirname + '/../src/hub'),
 	http = require('q-io/http'),
 	assert = require('assert'),
-	util = require('util'),
 	fs = require('q-io/fs'),
 	q = require('q'),
-	port = 3333;
+	io = require('socket.io-client'),
+    hubClient = require(__dirname + '/../public/hub-api.js'),
+	socketOps = {
+		transports: ['websocket'],
+		'force new connection': true
+	},
+	port = 3333,
+	hubUrl = 'http://localhost:' + port;
 
-describe('webserver', function () {
-	var hubApp;
+describe('application', function () {
+	var hubApp, clock;
 
 	before(function (done) {
 		hubApp = hub.createHub();
@@ -35,12 +43,45 @@ describe('webserver', function () {
 		assert(hubApp);
 	});
 
-	it('should serve the hub-api.js at /hub-api.js', function () {
-		return q.allSettled([
-			http.read(util.format('http://localhost:%d/hub-api.js', port)),
-			fs.read(__dirname + '/../public/hub-api.js')
-		]).spread(function(res, file) {
-			assert.equal(res.value.toString('utf-8'), file.value);
+	describe('webserver', function () {
+		it('should serve the hub-api.js at /hub-api.js', function () {
+			return q.allSettled([
+				http.read(hubUrl + '/hub-api.js'),
+				fs.read(__dirname + '/../public/hub-api.js')
+			]).spread(function(res, file) {
+				assert.equal(res.value.toString('utf-8'), file.value);
+			});
 		});
 	});
-}); 
+
+	describe('socket server & hub client', function () {
+
+        beforeEach(function() {
+            this.client = hubClient(hubUrl, socketOps);
+        });
+
+        describe('HubClient()', function() {
+            it('should return an object of sorts', function() {
+                var client = hubClient(hubUrl, socketOps);
+                assert(client !== null && typeof client === 'object');
+            });
+        });
+
+        describe('HubClient.authenticate()', function () {
+            it('should fulfill promise when given valid password', function() {
+                return this.client.authenticate('kittens').then(
+                    function() {},
+                    function() { assert.fail('promise rejected'); }
+                );
+            });
+
+            it('should reject promise when given invalid password', function() {
+                return this.client.authenticate('puppies').then(
+                    function() { assert.fail('promise fulfilled'); },
+                    function() {}
+                );
+            });
+        });
+
+	});
+});
