@@ -2,7 +2,7 @@
 
 var config = require('./config'),
     accessKey = config.secret,
-    bcrypt = require('bcrypt'),
+    bcrypt = require('bcrypt-nodejs'),
     Server = require('socket.io'),
     express = require('express'),
     http = require('http'),
