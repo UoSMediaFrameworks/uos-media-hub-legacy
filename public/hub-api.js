@@ -52,11 +52,36 @@
         this.socket.emit('auth', password, func);
         return func.promise;
     };
+
+    HubClient.prototype.listScenes = function() {
+    	var deferred = q.defer();
+        this.socket.emit('listScenes', function(sceneNames) {
+        	if (sceneNames) {
+        		deferred.resolve(sceneNames);
+        	} else {
+        		deferred.reject();
+        	}
+        });
+        return deferred.promise;
+    };
     
     HubClient.prototype.saveScene = function(mediaScene) {
     	var func = makePromise();
         this.socket.emit('saveScene', mediaScene, func);
         return func.promise;
+    };
+
+    HubClient.prototype.loadScene = function(sceneName) {
+    	var deferred = q.defer();
+    	this.socket.emit('loadScene', sceneName, function(mediaScene) {
+    		if (mediaScene) {
+    			deferred.resolve(mediaScene);
+    		} else {
+    			deferred.reject();
+    		}
+    	});
+
+    	return deferred.promise;
     };
 
     HubClient.prototype.disconnect = function() {

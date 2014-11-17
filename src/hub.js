@@ -6,10 +6,11 @@ var config = require('./config'),
     Server = require('socket.io'),
     express = require('express'),
     http = require('http'),
-    path = require('path');
+    path = require('path'),
+    mongo = require('mongojs');
 
-var Hub = function() {
-
+var Hub = function(mongoUrl) {
+    this.db = mongo.connect(mongoUrl, ['mediaScenes']);
 };
 
 
@@ -36,13 +37,30 @@ Hub.prototype.listen = function(port, callback) {
 
             if (authed) {
                 // enable other api handlers
-                socket.on('list', function() {
-
+                socket.on('listScenes', function(callback) {
+                    self.db.mediaScenes.find({}, {name: 1}, function(err, sceneNames) {
+                        if (err) {
+                            callback(false);
+                        } else {
+                            callback(sceneNames);
+                        }
+                    });
                 });
                 
                 socket.on('saveScene', function(sceneData, callback) {
-                    console.log(sceneData);
-                    callback(true);
+                    self.db.mediaScenes.save(sceneData, function(err, saved) {
+                        if (err || !saved) {
+                            callback(false);
+                        } else {
+                            callback(true);
+                        }
+                    });
+                });
+
+                socket.on('loadScene', function(sceneName, callback) {
+                    self.db.mediaScenes.find({name: sceneName}, function(err, scenes) {
+
+                    });
                 });
 
                 callback(true);
@@ -52,13 +70,13 @@ Hub.prototype.listen = function(port, callback) {
             }
         });
 
-        if (! self.disableDisconnectTimeout) {
-            setTimeout(function() {
-                if (! authed) {
-                    socket.disconnect();
-                }
-            }, 3000);
-        }
+    
+        setTimeout(function() {
+            if (! authed) {
+                socket.disconnect();
+            }
+        }, 3000);
+        
     });
 };
 
@@ -67,9 +85,7 @@ Hub.prototype.close = function(cb) {
 };
 
 module.exports = { 
-    createHub: function(disableDisconnectTimeout) {
-        var h = new Hub();
-        h.disableDisconnectTimeout = disableDisconnectTimeout;
-        return h;
+    createHub: function(mongoUrl) {
+        return new Hub(mongoUrl);
     }
 };

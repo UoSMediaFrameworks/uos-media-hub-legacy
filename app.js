@@ -1,5 +1,6 @@
-'use strict';
-
-var hub = require('./src/hub').createHub();
+"use strict";
+	
+var config = require('./config.js'),
+	hub = require('./src/hub').createHub(config.mongo);
     
-hub.listen(process.env.PORT || 3000);
+hub.listen(config.port);

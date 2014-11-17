@@ -11,15 +11,15 @@ var hub = require(__dirname + '/../src/hub'),
 		transports: ['websocket'],
 		forceNew: true
 	},
-	port = 3333,
-	hubUrl = 'http://localhost:' + port;
+	config = require(__dirname + '/../config.js'),
+	hubUrl = 'http://localhost:' + config.port;
 
 describe('application', function () {
 	var hubApp, clock;
 
 	before(function (done) {
-		hubApp = hub.createHub(true);
-		hubApp.listen(port, function(err, result) {
+		hubApp = hub.createHub(config.mongo);
+		hubApp.listen(config.port, function(err, result) {
 			if (err){
 				done(err);
 			} else {
@@ -87,13 +87,23 @@ describe('application', function () {
             });
         });
 
-        describe('an authenticated HubClient', function () {
+        describe('HubClient.saveScene()', function () {
         	beforeEach(function() {
         		return this.client.authenticate('kittens');
         	});
 
-        	it('should save a scene', function () {
-            	return this.client.saveScene({test: 'aoeu', heu: 3});
+        	it('should resolve a promise successfully when scene is saved', function () {
+            	return this.client.saveScene({name: 'scene1', heu: 3});
+            });
+
+            it('should be listed in listScenes()', function () {
+            	var self = this;
+            	var sceneName = 'scene1';
+            	return self.client.saveScene({name: sceneName, heu: 3}).then(function() {
+            		return self.client.listScenes().then(function(scenes) {
+            			console.log('here', scenes);
+            		});
+            	});
             });
         });
 
