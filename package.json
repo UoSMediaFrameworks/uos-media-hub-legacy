@@ -21,6 +21,7 @@
     "bcrypt-nodejs": "0.0.3",
     "express": "^4.10.1",
     "mocha": "^2.0.1",
+    "mongojs": "^0.17.0",
     "node-inspector": "^0.7.4",
     "q": "^1.1.1",
     "q-io": "^1.11.5",
