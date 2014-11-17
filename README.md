@@ -20,3 +20,9 @@ Creates and returns a new instance of a HubClient.
 Returns a promise that is fulfilled on succesful authentication, and rejected on failed.
 
 * `password` configured password on the Hub
+
+##### `saveScene(mediaScene)`
+
+Returns a promise that is fulfilled on succesful saving of scene to the database.  Promise is rejected if saving fails.
+
+* `mediaScene` Object that represents a MediaScene
