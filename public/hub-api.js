@@ -1,6 +1,7 @@
 "use strict";
 
 (function() {
+
 	var root = this;
     // hold on to anything else currently in the global object incase we want to call
     // with noConflict()
@@ -8,39 +9,58 @@
 
     // detect existence of socket.io-client
     var hasRequire = typeof require !== 'undefined';
-    var io = root.io,
-        Q = root.Q;
-
-    if( typeof _ === 'undefined' ) {
-        if( hasRequire ) {
-            io = require('socket.io-client');
+    
+    function loadLib(browserName, nodeName, errorMsg) {
+        var lib = root[browserName];
+        if (typeof lib === 'undefined') {
+            if (hasRequire) {
+                return require(nodeName);
+            }
+            
+            if (errorMsg) {
+                throw new Error(errorMsg);   
+            }
         }
-        else throw new Error('HubClient requires socket.io-client, see http://socket.io');
+        
+        return lib;
+    }
+    
+    var io = loadLib('io', 'socket.io-client', 'HubClient requires socket.io-client, see http://socket.io');
+    var q = loadLib('Q', 'q', 'HubClient requires Q or jQuery for promises. See http://github.com/kriskowal/q');
+    
+
+    function makePromise() {
+    	var deferred = q.defer(),
+    		func = function(success) {
+    			if (success) {
+	                deferred.resolve();
+	            } else {
+	                deferred.reject();
+	            }
+    		};
+    	func.promise = deferred.promise;
+
+    	return func;
     }
 
-    if( typeof Q === 'undefined' ) {
-        if( hasRequire ) {
-            Q = require('q');
-        }
-        else throw new Error('HubClient requires Q, see http://github.com/kriskowal/q');
-    }
-
-
-	var HubClient = function(url, password, socketIoOpts) {
+	var HubClient = function(url, socketIoOpts) {
         this.socket = io(url, socketIoOpts);
 	};
 
     HubClient.prototype.authenticate = function(password) {
-        var deferred = Q.defer();
-        this.socket.emit('auth', password, function(success) {
-            if (success) {
-                deferred.resolve();
-            } else {
-                deferred.reject();
-            }
-        });
+        var func = makePromise();
+        this.socket.emit('auth', password, func);
+        return func.promise;
+    };
+    
+    HubClient.prototype.saveScene = function(mediaScene) {
+    	var func = makePromise();
+        this.socket.emit('saveScene', mediaScene, func);
+        return func.promise;
+    };
 
-        return deferred.promise;
+    HubClient.prototype.disconnect = function() {
+    	this.socket.disconnect();
     };
 
     // maybe down the road I want to switch out the constructor, so keep it internal

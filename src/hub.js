@@ -14,7 +14,8 @@ var Hub = function() {
 
 
 Hub.prototype.listen = function(port, callback) {
-    var app = express(),
+    var self = this,
+        app = express(),
         server = http.Server(app),
         io = new Server(server);
 
@@ -33,30 +34,31 @@ Hub.prototype.listen = function(port, callback) {
         socket.on('auth', function (secret, callback) {
             authed = bcrypt.compareSync(secret, accessKey);
 
-            callback(authed);
-
-
             if (authed) {
                 // enable other api handlers
                 socket.on('list', function() {
 
                 });
-
                 
-                
-                socket.on('ping', function() {
-                    socket.emit('pong');
+                socket.on('saveScene', function(sceneData, callback) {
+                    console.log(sceneData);
+                    callback(true);
                 });
+
+                callback(true);
             } else {
+                callback(false);
                 socket.disconnect();
             }
         });
 
-        setTimeout(function() {
-            if (! authed) {
-                socket.disconnect();
-            }
-        }, 3000);
+        if (! self.disableDisconnectTimeout) {
+            setTimeout(function() {
+                if (! authed) {
+                    socket.disconnect();
+                }
+            }, 3000);
+        }
     });
 };
 
@@ -65,7 +67,9 @@ Hub.prototype.close = function(cb) {
 };
 
 module.exports = { 
-    createHub: function() {
-        return new Hub();
+    createHub: function(disableDisconnectTimeout) {
+        var h = new Hub();
+        h.disableDisconnectTimeout = disableDisconnectTimeout;
+        return h;
     }
 };

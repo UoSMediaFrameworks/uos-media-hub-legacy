@@ -9,7 +9,7 @@ var hub = require(__dirname + '/../src/hub'),
     hubClient = require(__dirname + '/../public/hub-api.js'),
 	socketOps = {
 		transports: ['websocket'],
-		'force new connection': true
+		forceNew: true
 	},
 	port = 3333,
 	hubUrl = 'http://localhost:' + port;
@@ -18,7 +18,7 @@ describe('application', function () {
 	var hubApp, clock;
 
 	before(function (done) {
-		hubApp = hub.createHub();
+		hubApp = hub.createHub(true);
 		hubApp.listen(port, function(err, result) {
 			if (err){
 				done(err);
@@ -60,6 +60,10 @@ describe('application', function () {
             this.client = hubClient(hubUrl, socketOps);
         });
 
+        afterEach(function() {
+        	this.client.disconnect();
+        });
+
         describe('HubClient()', function() {
             it('should return an object of sorts', function() {
                 var client = hubClient(hubUrl, socketOps);
@@ -80,6 +84,16 @@ describe('application', function () {
                     function() { assert.fail('promise fulfilled'); },
                     function() {}
                 );
+            });
+        });
+
+        describe('an authenticated HubClient', function () {
+        	beforeEach(function() {
+        		return this.client.authenticate('kittens');
+        	});
+
+        	it('should save a scene', function () {
+            	return this.client.saveScene({test: 'aoeu', heu: 3});
             });
         });
 
