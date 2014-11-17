@@ -5,6 +5,7 @@ var hub = require(__dirname + '/../src/hub'),
 	assert = require('assert'),
 	fs = require('q-io/fs'),
 	q = require('q'),
+	_ = require('lodash'),
 	io = require('socket.io-client'),
     hubClient = require(__dirname + '/../public/hub-api.js'),
 	socketOps = {
@@ -101,6 +102,8 @@ describe('application', function () {
             	var sceneName = 'scene1';
             	return self.client.saveScene({name: sceneName, heu: 3}).then(function() {
             		return self.client.listScenes().then(function(scenes) {
+            			// figure out if it's in there
+            			//_.where()
             			console.log('here', scenes);
             		});
             	});
