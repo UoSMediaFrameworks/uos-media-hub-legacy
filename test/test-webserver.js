@@ -132,13 +132,18 @@ describe('application', function () {
 		describe('HubClient.listScenes()', function () {
 
 			beforeEach(function () {
-				return this.client.authenticate('kittens').then(function() {
+				var self = this;
+				return self.client.authenticate('kittens').then(function() {
 					return q.all([
-						this.client.saveScene({name: 'a'}),
-						this.client.saveScene({name: 'b'}),
-						this.client.saveScene({name: 'c'})
-					]);
-				}.bind(this));
+						self.client.saveScene({name: 'a'}),
+						self.client.saveScene({name: 'b'}),
+						self.client.saveScene({name: 'c'})
+					]).then(function() {
+						return self.client.listScenes().then(function(scenes) {
+		            		self.scenes = scenes; 
+		            	});
+					});
+				});
 			});
 
 			afterEach(function () {
@@ -146,11 +151,13 @@ describe('application', function () {
         	});
 
 			it('should return three scenes in promise', function () {
-            	var self = this;
-            	var sceneName = 'scene1';
-            	return self.client.listScenes().then(function(scenes) {
-            		assert.equal(scenes.length, 3); 
-            	});
+        		assert.equal(this.scenes.length, 3); 
+            });
+
+            it('should only include name and _id properties', function () {
+            	var keys = _.uniq(_.flatten(_.map(this.scenes, function(s) { return _.keys(s); })));
+            	assert.deepEqual(_.sortBy(keys), _.sortBy(['name', '_id']));
+            	
             });
 		});
 
