@@ -145,13 +145,11 @@ describe('application', function () {
         		return clearDatabase();
         	});
 
-			it('should be listed in listScenes()', function () {
+			it('should return three scenes in promise', function () {
             	var self = this;
             	var sceneName = 'scene1';
-            	return self.client.saveScene({name: sceneName, heu: 3}).then(function(savedScene) {
-            		return self.client.listScenes().then(function(scenes) {
-            			assert(_.where(scenes, {_id: savedScene._id}));
-            		});
+            	return self.client.listScenes().then(function(scenes) {
+            		assert.equal(scenes.length, 3); 
             	});
             });
 		});
