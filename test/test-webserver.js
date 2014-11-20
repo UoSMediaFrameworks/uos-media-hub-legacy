@@ -12,10 +12,10 @@ var hub = require(__dirname + '/../src/hub'),
         transports: ['websocket'],
         forceNew: true
     },
-    config = require(__dirname + '/../config.js'),
+    config = require.main.require('config'),
     hubUrl = 'http://localhost:' + config.port;
 
-describe('application', function () {
+describe('Hub', function () {
     var hubApp,
         clearDatabase = function() {
             var deferred = q.defer();
@@ -31,8 +31,8 @@ describe('application', function () {
         };
 
     before(function (done) {
-        hubApp = hub.createHub(config.mongo);
-        hubApp.listen(config.port, function(err, result) {
+        hubApp = hub.createHub(config);
+        hubApp.listen(function(err, result) {
             if (err){
                 done(err);
             } else {
@@ -52,22 +52,25 @@ describe('application', function () {
         hubApp.close();
     });
 
+    afterEach(function () {
+        return clearDatabase();
+    });
+
     it('should exist', function () {
         assert(hubApp);
     });
 
-    describe('webserver', function () {
-        it('should serve the hub-api.js at /hub-api.js', function () {
-            return q.allSettled([
-                http.read(hubUrl + '/hub-api.js'),
-                fs.read(__dirname + '/../public/hub-api.js')
-            ]).spread(function(res, file) {
-                assert.equal(res.value.toString('utf-8'), file.value);
-            });
+
+    it('should serve the hub-api.js at /hub-api.js', function () {
+        return q.allSettled([
+            http.read(hubUrl + '/hub-api.js'),
+            fs.read(__dirname + '/../public/hub-api.js')
+        ]).spread(function(res, file) {
+            assert.equal(res.value.toString('utf-8'), file.value);
         });
     });
 
-    describe('socket server & hub client', function () {
+    describe('HubClient', function () {
 
         beforeEach(function() {
             this.client = hubClient(hubUrl, socketOps);
@@ -99,16 +102,19 @@ describe('application', function () {
                 );
             });
         });
+    });
+
+    describe('authenticated HubClient', function () {
+        beforeEach(function() {
+            this.client = hubClient(hubUrl, socketOps);
+            return this.client.authenticate('kittens');
+        });
+
+        afterEach(function () {
+            this.client.disconnect();
+        });
 
         describe('HubClient.saveScene()', function () {
-            beforeEach(function() {
-                return this.client.authenticate('kittens');
-            });
-
-            afterEach(function () {
-                return clearDatabase();
-            });
-
             it('should resolve a promise successfully when scene is saved', function () {
                 return this.client.saveScene({name: 'scene1', heu: 3});
             });
@@ -133,24 +139,19 @@ describe('application', function () {
 
             beforeEach(function () {
                 var self = this;
-                return self.client.authenticate('kittens').then(function() {
-                    return q.all([
-                        self.client.saveScene({name: 'a'}),
-                        self.client.saveScene({name: 'b'}),
-                        self.client.saveScene({name: 'c'})
-                    ]).then(function() {
-                        return self.client.listScenes().then(function(scenes) {
-                            self.scenes = scenes; 
-                        });
+                
+                return q.all([
+                    self.client.saveScene({name: 'a'}),
+                    self.client.saveScene({name: 'b'}),
+                    self.client.saveScene({name: 'c'})
+                ]).then(function() {
+                    return self.client.listScenes().then(function(scenes) {
+                        self.scenes = scenes; 
                     });
                 });
             });
 
-            afterEach(function () {
-                return clearDatabase();
-            });
-
-            it('should return three scenes in promise', function () {
+            it('should return all scenes', function () {
                 assert.equal(this.scenes.length, 3); 
             });
 
@@ -160,4 +161,6 @@ describe('application', function () {
             });
         });
     });
+
+    
 });

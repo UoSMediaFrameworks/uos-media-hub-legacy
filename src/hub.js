@@ -1,8 +1,6 @@
 'use strict';
 
-var config = require.main.require('config'), 
-    accessKey = config.secret,
-    bcrypt = require('bcrypt-nodejs'),
+var bcrypt = require('bcrypt-nodejs'),
     Server = require('socket.io'),
     express = require('express'),
     http = require('http'),
@@ -29,17 +27,18 @@ function addApiCalls (hub, socket) {
     });
 }
 
-var Hub = function(mongoUrl) {
-    this.db = mongo.connect(mongoUrl, ['mediaScenes']);
+var Hub = function(config) {
+    this.config = config;
+    this.db = mongo.connect(config.mongo, ['mediaScenes']);
 };
 
-Hub.prototype.listen = function(port, callback) {
+Hub.prototype.listen = function(callback) {
     var self = this,
         app = express(),
         server = http.Server(app),
         io = new Server(server);
 
-    server.listen(port, callback);
+    server.listen(self.config.port, callback);
 
     this.server = server;
 
@@ -52,7 +51,7 @@ Hub.prototype.listen = function(port, callback) {
     io.sockets.on('connection', function (socket) {
         var authed = false;
         socket.on('auth', function (secret, callback) {
-            authed = bcrypt.compareSync(secret, accessKey);
+            authed = bcrypt.compareSync(secret, self.config.secret);
 
             if (authed) {
                 addApiCalls(self, socket);
