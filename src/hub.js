@@ -48,13 +48,7 @@ Hub.prototype.listen = function(port, callback) {
                 });
                 
                 socket.on('saveScene', function(sceneData, callback) {
-                    self.db.mediaScenes.save(sceneData, function(err, saved) {
-                        if (err || !saved) {
-                            callback(false);
-                        } else {
-                            callback(true);
-                        }
-                    });
+                    self.db.mediaScenes.save(sceneData, callback);
                 });
 
                 socket.on('loadScene', function(sceneName, callback) {

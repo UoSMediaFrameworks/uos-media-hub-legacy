@@ -97,14 +97,18 @@ describe('application', function () {
             	return this.client.saveScene({name: 'scene1', heu: 3});
             });
 
+            it('should include the saved scene in the resolved promise', function () {
+            	return this.client.saveScene({name: 'scene1', heu: 3}).then(function(scene) {
+            		assert(scene !== null && typeof scene === 'object');
+            	});
+            });
+
             it('should be listed in listScenes()', function () {
             	var self = this;
             	var sceneName = 'scene1';
-            	return self.client.saveScene({name: sceneName, heu: 3}).then(function() {
+            	return self.client.saveScene({name: sceneName, heu: 3}).then(function(savedScene) {
             		return self.client.listScenes().then(function(scenes) {
-            			// figure out if it's in there
-            			//_.where()
-            			console.log('here', scenes);
+            			assert(_.where(scenes, {_id: savedScene._id}));
             		});
             	});
             });

@@ -66,9 +66,15 @@
     };
     
     HubClient.prototype.saveScene = function(mediaScene) {
-    	var func = makePromise();
-        this.socket.emit('saveScene', mediaScene, func);
-        return func.promise;
+    	var deferred = q.defer();
+        this.socket.emit('saveScene', mediaScene, function(err, scene) {
+        	if (err) {
+        		deferred.reject(err);
+        	} else {
+        		deferred.resolve(scene); 
+        	}
+        });
+        return deferred.promise;
     };
 
     HubClient.prototype.loadScene = function(sceneName) {
