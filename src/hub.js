@@ -1,6 +1,6 @@
 'use strict';
 
-var config = require('./config'),
+var config = require.main.require('config'), 
     accessKey = config.secret,
     bcrypt = require('bcrypt-nodejs'),
     Server = require('socket.io'),
