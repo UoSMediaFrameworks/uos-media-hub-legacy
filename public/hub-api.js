@@ -77,13 +77,13 @@
         return deferred.promise;
     };
 
-    HubClient.prototype.loadScene = function(sceneName) {
+    HubClient.prototype.loadScene = function(sceneId) {
     	var deferred = q.defer();
-    	this.socket.emit('loadScene', sceneName, function(mediaScene) {
-    		if (mediaScene) {
-    			deferred.resolve(mediaScene);
+    	this.socket.emit('loadScene', sceneId, function(err, scene) {
+    		if (err) {
+    			deferred.reject(err);
     		} else {
-    			deferred.reject();
+    			deferred.resolve(scene);
     		}
     	});
 

@@ -16,7 +16,19 @@ var hub = require(__dirname + '/../src/hub'),
 	hubUrl = 'http://localhost:' + config.port;
 
 describe('application', function () {
-	var hubApp, clock;
+	var hubApp,
+		clearDatabase = function() {
+			var deferred = q.defer();
+			hubApp.db.mediaScenes.remove({}, function(err, count) {
+				if (err) {
+					deferred.reject(err);
+				} else {
+					deferred.resolve(count);
+				}
+			});
+
+			return deferred.promise;
+		};
 
 	before(function (done) {
 		hubApp = hub.createHub(config.mongo);
@@ -93,6 +105,10 @@ describe('application', function () {
         		return this.client.authenticate('kittens');
         	});
 
+        	afterEach(function () {
+        		return clearDatabase();
+        	});
+
         	it('should resolve a promise successfully when scene is saved', function () {
             	return this.client.saveScene({name: 'scene1', heu: 3});
             });
@@ -103,7 +119,33 @@ describe('application', function () {
             	});
             });
 
-            it('should be listed in listScenes()', function () {
+            it('should be loadable with loadScene', function () {
+            	var self = this;
+            	return self.client.saveScene({name: 'aosenhtua', heu: 3}).then(function(savedScene) {
+            		return self.client.loadScene(savedScene._id).then(function(loadedScene) {
+            			assert.deepEqual(savedScene, loadedScene);
+            		});
+            	});
+            });
+        });
+
+		describe('HubClient.listScenes()', function () {
+
+			beforeEach(function () {
+				return this.client.authenticate('kittens').then(function() {
+					return q.all([
+						this.client.saveScene({name: 'a'}),
+						this.client.saveScene({name: 'b'}),
+						this.client.saveScene({name: 'c'})
+					]);
+				}.bind(this));
+			});
+
+			afterEach(function () {
+        		return clearDatabase();
+        	});
+
+			it('should be listed in listScenes()', function () {
             	var self = this;
             	var sceneName = 'scene1';
             	return self.client.saveScene({name: sceneName, heu: 3}).then(function(savedScene) {
@@ -112,7 +154,7 @@ describe('application', function () {
             		});
             	});
             });
-        });
+		});
 
 	});
 });

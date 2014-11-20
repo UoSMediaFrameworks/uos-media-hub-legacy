@@ -51,10 +51,8 @@ Hub.prototype.listen = function(port, callback) {
                     self.db.mediaScenes.save(sceneData, callback);
                 });
 
-                socket.on('loadScene', function(sceneName, callback) {
-                    self.db.mediaScenes.find({name: sceneName}, function(err, scenes) {
-
-                    });
+                socket.on('loadScene', function(sceneId, callback) {
+                    self.db.mediaScenes.findOne({_id: mongo.ObjectId(sceneId)}, callback);
                 });
 
                 callback(true);
