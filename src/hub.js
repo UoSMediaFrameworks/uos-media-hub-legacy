@@ -9,10 +9,29 @@ var config = require('./config'),
     path = require('path'),
     mongo = require('mongojs');
 
+function addApiCalls (hub, socket) {
+    socket.on('listScenes', function(callback) {
+        hub.db.mediaScenes.find({}, {name: 1}, function(err, sceneNames) {
+            if (err) {
+                callback(false);
+            } else {
+                callback(sceneNames);
+            }
+        });
+    });
+    
+    socket.on('saveScene', function(sceneData, callback) {
+        hub.db.mediaScenes.save(sceneData, callback);
+    });
+
+    socket.on('loadScene', function(sceneId, callback) {
+        hub.db.mediaScenes.findOne({_id: mongo.ObjectId(sceneId)}, callback);
+    });
+}
+
 var Hub = function(mongoUrl) {
     this.db = mongo.connect(mongoUrl, ['mediaScenes']);
 };
-
 
 Hub.prototype.listen = function(port, callback) {
     var self = this,
@@ -36,25 +55,7 @@ Hub.prototype.listen = function(port, callback) {
             authed = bcrypt.compareSync(secret, accessKey);
 
             if (authed) {
-                // enable other api handlers
-                socket.on('listScenes', function(callback) {
-                    self.db.mediaScenes.find({}, {name: 1}, function(err, sceneNames) {
-                        if (err) {
-                            callback(false);
-                        } else {
-                            callback(sceneNames);
-                        }
-                    });
-                });
-                
-                socket.on('saveScene', function(sceneData, callback) {
-                    self.db.mediaScenes.save(sceneData, callback);
-                });
-
-                socket.on('loadScene', function(sceneId, callback) {
-                    self.db.mediaScenes.findOne({_id: mongo.ObjectId(sceneId)}, callback);
-                });
-
+                addApiCalls(self, socket);
                 callback(true);
             } else {
                 callback(false);
