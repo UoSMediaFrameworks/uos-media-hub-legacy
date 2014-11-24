@@ -7,7 +7,7 @@ var hub = require(__dirname + '/../src/hub'),
     q = require('q'),
     _ = require('lodash'),
     io = require('socket.io-client'),
-    hubClient = require('MediaHubClient'),
+    hubClient = require('media-hub-client'),
     socketOps = {
         transports: ['websocket'],
         forceNew: true
