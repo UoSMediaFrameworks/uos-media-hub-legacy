@@ -42,12 +42,6 @@ Hub.prototype.listen = function(callback) {
 
     this.server = server;
 
-    // serve up the API library
-    app.get('/hub-api.js', function(req, res) {
-        res.sendFile(path.resolve(__dirname + '/../public/hub-api.js'));
-    });
-
-
     io.sockets.on('connection', function (socket) {
         var authed = false;
         socket.on('auth', function (secret, callback) {

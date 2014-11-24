@@ -7,12 +7,12 @@ var hub = require(__dirname + '/../src/hub'),
     q = require('q'),
     _ = require('lodash'),
     io = require('socket.io-client'),
-    hubClient = require(__dirname + '/../public/hub-api.js'),
+    hubClient = require('MediaHubClient'),
     socketOps = {
         transports: ['websocket'],
         forceNew: true
     },
-    config = require.main.require('config'),
+    config = require('../config'),
     hubUrl = 'http://localhost:' + config.port;
 
 describe('Hub', function () {
@@ -58,16 +58,6 @@ describe('Hub', function () {
 
     it('should exist', function () {
         assert(hubApp);
-    });
-
-
-    it('should serve the hub-api.js at /hub-api.js', function () {
-        return q.allSettled([
-            http.read(hubUrl + '/hub-api.js'),
-            fs.read(__dirname + '/../public/hub-api.js')
-        ]).spread(function(res, file) {
-            assert.equal(res.value.toString('utf-8'), file.value);
-        });
     });
 
     describe('HubClient', function () {
