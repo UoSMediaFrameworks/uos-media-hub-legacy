@@ -8,7 +8,7 @@ var bcrypt = require('bcrypt-nodejs'),
     mongo = require('mongojs');
 
 
-function addApiCalls (hub, socket) {
+function addApiCalls (hub, io, socket) {
 
     function _findScene (sceneId, cb) {
         var search = {_id: mongo.ObjectId(sceneId)};
@@ -31,17 +31,18 @@ function addApiCalls (hub, socket) {
             sceneData._id = mongo.ObjectId(sceneData._id);
         }
 
-        hub.db.mediaScenes.save(sceneData, callback);
+        hub.db.mediaScenes.save(sceneData, function(err, scene) {
+            io.to(scene._id.toString()).emit('sceneUpdate', scene);
+            callback(err, scene);
+        });
     });
 
     socket.on('loadScene', _findScene);
 
     socket.on('subScene', function(sceneId, callback) {
-        // ensure it exists
         _findScene(sceneId, function(err, scene) {
-            // each scene will have it's own socket.io room
-            socket.join(sceneId);
-            callback(scene);
+            socket.join(sceneId); 
+            callback(err, scene);
         });
     });
 }
@@ -67,7 +68,7 @@ Hub.prototype.listen = function(callback) {
             authed = bcrypt.compareSync(secret, self.config.secret);
 
             if (authed) {
-                addApiCalls(self, socket);
+                addApiCalls(self, io, socket);
                 callback(true);
             } else {
                 callback(false);

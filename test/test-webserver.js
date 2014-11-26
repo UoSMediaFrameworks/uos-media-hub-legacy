@@ -171,11 +171,29 @@ describe('Hub', function () {
 
         	it('should return scene that was subscribed to', function () {
         		var self = this;
-        		return self.client.subScene(self.scene._id).then(function(scene) {
-        			console.log(self.scene, scene);
+        		return self.client.subScene(self.scene._id, function() {}).then(function(scene) {
         			assert.deepEqual(self.scene, scene);
         		});
         	});
+
+            it('should call the subScene handler when a scene gets updated', function (done) {
+                var self = this;
+                var newScene;
+                var handler = function(updatedScene) {
+                    assert.deepEqual(newScene, updatedScene);
+                    done();
+                };
+
+                self.client.subScene(self.scene._id, handler).then(function() {
+                    // connect with another client and update the scene
+                    var otherClient = hubClient(hubUrl, socketOps);
+                    otherClient.authenticate('kittens').then(function() {
+                        newScene = self.scene;
+                        newScene.newKey = 'blah';
+                        otherClient.saveScene(newScene);
+                    });
+                }); 
+            });
         });
     });
 
