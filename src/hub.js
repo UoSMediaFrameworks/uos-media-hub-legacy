@@ -19,6 +19,11 @@ function addApiCalls (hub, socket) {
     });
     
     socket.on('saveScene', function(sceneData, callback) {
+        // convert _id so mongo recognizes it
+        if (sceneData.hasOwnProperty('_id')) {
+            sceneData._id = mongo.ObjectId(sceneData._id);
+        }
+        
         hub.db.mediaScenes.save(sceneData, callback);
     });
 

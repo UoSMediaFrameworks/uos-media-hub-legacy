@@ -122,6 +122,17 @@ describe('Hub', function () {
                     });
                 });
             });
+
+            it('should update an existing scene when saved', function () {
+            	var self = this;
+            	return self.client.saveScene({name: 'aosenhtua', heu: 3}).then(function(savedScene) {
+                    return self.client.saveScene(savedScene).then(function(s2) {
+                    	return self.client.listScenes().then(function(scenes) {
+                    		assert.equal(scenes.length, 1);
+                    	});
+                    });
+                });
+            });
         });
 
         describe('HubClient.listScenes()', function () {
