@@ -160,6 +160,23 @@ describe('Hub', function () {
                 assert.deepEqual(_.sortBy(keys), _.sortBy(['name', '_id']));
             });
         });
+
+        describe('HubClient.subScene()', function () {
+        	beforeEach(function () {
+        		var self = this;
+        		return this.client.saveScene({name: 'a'}).then(function(scene) {
+        			self.scene = scene;
+        		});
+        	});
+
+        	it('should return scene that was subscribed to', function () {
+        		var self = this;
+        		return self.client.subScene(self.scene._id).then(function(scene) {
+        			console.log(self.scene, scene);
+        			assert.deepEqual(self.scene, scene);
+        		});
+        	});
+        });
     });
 
     
