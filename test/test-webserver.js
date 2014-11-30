@@ -195,6 +195,31 @@ describe('Hub', function () {
                 }); 
             });
         });
+
+        describe('HubClient.unsubScene()', function () {
+            beforeEach(function () {
+                var self = this;
+                return this.client.saveScene({name: 'a'}).then(function(scene) {
+                    self.scene = scene;
+                    return self.client.subScene(scene._id, function() {
+                        self.handler();
+                    });
+                });
+            });
+
+            it('should not call handler after scene gets updated', function () {
+                var self = this;
+                self.handler = function() {
+                    assert.fail('handler was called');
+                };
+
+                return self.client.unsubScene(self.scene._id).then(function() {
+                    self.scene.foo = 'bar';
+                    return self.client.saveScene(self.scene);
+                });
+            });
+        });
+        
     });
 
     

@@ -45,6 +45,13 @@ function addApiCalls (hub, io, socket) {
             callback(err, scene);
         });
     });
+
+    socket.on('unsubScene', function(sceneId, callback) {
+        _findScene(sceneId, function(err, scene) {
+            socket.leave(sceneId); 
+            callback(err);
+        });
+    });
 }
 
 var Hub = function(config) {
