@@ -18,10 +18,11 @@
   },
   "homepage": "https://github.com/Colum-SMA-Dev/MediaHub",
   "dependencies": {
-    "media-hub-client": "git+https://git@github.com/Colum-SMA-Dev/MediaHubClient.git",
     "bcrypt-nodejs": "0.0.3",
     "express": "^4.10.1",
+    "hat": "0.0.3",
     "lodash": "^2.4.1",
+    "media-hub-client": "git+https://git@github.com/Colum-SMA-Dev/MediaHubClient.git",
     "mocha": "^2.0.1",
     "mongojs": "^0.17.0",
     "node-inspector": "^0.7.4",

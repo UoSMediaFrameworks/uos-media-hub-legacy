@@ -78,14 +78,40 @@ describe('Hub', function () {
 
         describe('HubClient.authenticate()', function () {
             it('should fulfill promise when given valid password', function() {
-                return this.client.authenticate('kittens').then(
+                return this.client.authenticate({password: 'kittens'}).then(
                     function() {},
                     function() { assert.fail('promise rejected'); }
                 );
             });
 
+            it('should fulfill promise with a token', function () {
+                return this.client.authenticate({password: 'kittens'}).then(
+                    function(token) {
+                        assert.equal(typeof token, 'string');
+                    },
+                    function() { assert.fail('promise rejected'); }
+                ); 
+            });
+
+            it('should fulfill promise when given a token with same token', function () {
+                return this.client.authenticate({password: 'kittens'}).then(
+                    function(token) {
+                        hubClient(hubUrl, socketOps).authenticate({token: token}).then(function(secondToken) {
+                            assert.equal(token, secondToken);
+                        });
+                    }
+                );
+            });
+
             it('should reject promise when given invalid password', function() {
-                return this.client.authenticate('puppies').then(
+                return this.client.authenticate({password: 'puppies'}).then(
+                    function() { assert.fail('promise fulfilled'); },
+                    function() {}
+                );
+            });
+
+            it('should reject promise when given invalid token', function() {
+                return this.client.authenticate({token: '9487asnotheu'}).then(
                     function() { assert.fail('promise fulfilled'); },
                     function() {}
                 );
@@ -96,7 +122,7 @@ describe('Hub', function () {
     describe('authenticated HubClient', function () {
         beforeEach(function() {
             this.client = hubClient(hubUrl, socketOps);
-            return this.client.authenticate('kittens');
+            return this.client.authenticate({password: 'kittens'});
         });
 
         afterEach(function () {
@@ -187,7 +213,7 @@ describe('Hub', function () {
                 self.client.subScene(self.scene._id, handler).then(function() {
                     // connect with another client and update the scene
                     var otherClient = hubClient(hubUrl, socketOps);
-                    otherClient.authenticate('kittens').then(function() {
+                    otherClient.authenticate({password: 'kittens'}).then(function() {
                         newScene = self.scene;
                         newScene.newKey = 'blah';
                         otherClient.saveScene(newScene);

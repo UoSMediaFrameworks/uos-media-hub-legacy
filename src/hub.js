@@ -7,6 +7,9 @@ var bcrypt = require('bcrypt-nodejs'),
     path = require('path'),
     mongo = require('mongojs');
 
+var hat = require('hat');
+
+var _validTokens = {};
 
 function addApiCalls (hub, io, socket) {
 
@@ -18,7 +21,7 @@ function addApiCalls (hub, io, socket) {
     socket.on('listScenes', function(callback) {
         hub.db.mediaScenes.find({}, {name: 1}, function(err, sceneNames) {
             if (err) {
-                callback(false);
+                callback([]);
             } else {
                 callback(sceneNames);
             }
@@ -71,12 +74,24 @@ Hub.prototype.listen = function(callback) {
 
     io.sockets.on('connection', function (socket) {
         var authed = false;
-        socket.on('auth', function (secret, callback) {
-            authed = bcrypt.compareSync(secret, self.config.secret);
-
+        var returnToken;
+        socket.on('auth', function (creds, callback) {
+            if (creds.hasOwnProperty('password')) {
+                authed = bcrypt.compareSync(creds.password, self.config.secret);    
+            } else if (creds.hasOwnProperty('token')) {
+                returnToken = creds.token;
+                authed = _validTokens.hasOwnProperty(returnToken);
+            }
+            
             if (authed) {
                 addApiCalls(self, io, socket);
-                callback(true);
+                
+                if (! returnToken) {
+                    returnToken = hat();
+                    _validTokens[returnToken] = null;
+                }
+                
+                callback(returnToken);
             } else {
                 callback(false);
                 socket.disconnect();
