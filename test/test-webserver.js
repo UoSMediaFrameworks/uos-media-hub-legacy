@@ -62,7 +62,7 @@ describe('Hub', function () {
     describe('HubClient', function () {
 
         beforeEach(function() {
-            this.client = hubClient(hubUrl, socketOps);
+            this.client = hubClient(socketOps);
         });
 
         afterEach(function() {
@@ -71,21 +71,21 @@ describe('Hub', function () {
 
         describe('HubClient()', function() {
             it('should return an object of sorts', function() {
-                var client = hubClient(hubUrl, socketOps);
+                var client = this.client.connect(hubUrl, {password: 'kittens'});
                 assert(client !== null && typeof client === 'object');
             });
         });
 
-        describe('HubClient.authenticate()', function () {
+        describe('HubClient.connect()', function () {
             it('should fulfill promise when given valid password', function() {
-                return this.client.authenticate({password: 'kittens'}).then(
+                return this.client.connect(hubUrl, {password: 'kittens'}).then(
                     function() {},
                     function() { assert.fail('promise rejected'); }
                 );
             });
 
             it('should fulfill promise with a token', function () {
-                return this.client.authenticate({password: 'kittens'}).then(
+                return this.client.connect(hubUrl, {password: 'kittens'}).then(
                     function(token) {
                         assert.equal(typeof token, 'string');
                     },
@@ -94,9 +94,9 @@ describe('Hub', function () {
             });
 
             it('should fulfill promise when given a token with same token', function () {
-                return this.client.authenticate({password: 'kittens'}).then(
+                return this.client.connect(hubUrl, {password: 'kittens'}).then(
                     function(token) {
-                        hubClient(hubUrl, socketOps).authenticate({token: token}).then(function(secondToken) {
+                        hubClient(socketOps).connect(hubUrl, {token: token}).then(function(secondToken) {
                             assert.equal(token, secondToken);
                         });
                     }
@@ -104,14 +104,14 @@ describe('Hub', function () {
             });
 
             it('should reject promise when given invalid password', function() {
-                return this.client.authenticate({password: 'puppies'}).then(
+                return this.client.connect(hubUrl, {password: 'puppies'}).then(
                     function() { assert.fail('promise fulfilled'); },
                     function() {}
                 );
             });
 
             it('should reject promise when given invalid token', function() {
-                return this.client.authenticate({token: '9487asnotheu'}).then(
+                return this.client.connect(hubUrl, {token: '9487asnotheu'}).then(
                     function() { assert.fail('promise fulfilled'); },
                     function() {}
                 );
@@ -119,10 +119,10 @@ describe('Hub', function () {
         });
     });
 
-    describe('authenticated HubClient', function () {
+    describe('connected HubClient', function () {
         beforeEach(function() {
-            this.client = hubClient(hubUrl, socketOps);
-            return this.client.authenticate({password: 'kittens'});
+            this.client = hubClient(socketOps);
+            return this.client.connect(hubUrl, {password: 'kittens'});
         });
 
         afterEach(function () {
@@ -212,8 +212,8 @@ describe('Hub', function () {
 
                 self.client.subScene(self.scene._id, handler).then(function() {
                     // connect with another client and update the scene
-                    var otherClient = hubClient(hubUrl, socketOps);
-                    otherClient.authenticate({password: 'kittens'}).then(function() {
+                    var otherClient = hubClient(socketOps);
+                    otherClient.connect(hubUrl, {password: 'kittens'}).then(function() {
                         newScene = self.scene;
                         newScene.newKey = 'blah';
                         otherClient.saveScene(newScene);
