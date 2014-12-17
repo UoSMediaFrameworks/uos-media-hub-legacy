@@ -84,12 +84,16 @@ Hub.prototype.listen = function(callback) {
     this.server = server;
 
     io.sockets.on('connection', function (socket) {
-        var authed = false;
+        var disconnectTimer = setTimeout(function() {
+            socket.disconnect();
+        }, 10000);
+
         socket.on('auth', function (creds, callback) {
  
             function respond (record) {
                 if (record) {
                     addApiCalls(self, io, socket);
+                    clearTimeout(disconnectTimer);
                     callback(record._id.toString());
                 } else {
                     callback(false);
@@ -112,11 +116,7 @@ Hub.prototype.listen = function(callback) {
         });
 
     
-        setTimeout(function() {
-            if (! authed) {
-                socket.disconnect();
-            }
-        }, 10000);
+        
         
     });
 };
