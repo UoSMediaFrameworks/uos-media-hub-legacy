@@ -26,7 +26,12 @@ module.exports = {
     }),
 
     find: requireClient(function find(id, cb) {
-        var search = {_id: mongo.ObjectId(id)};
-        return _sessions.findOne(search, cb);
+        // some object ids might be invalid so ignore errors from there
+        try {
+            var search = {_id: new mongo.ObjectId(id)};    
+            return _sessions.findOne(search, cb);
+        } catch(err) {
+            cb(null, null);
+        }
     })
 };

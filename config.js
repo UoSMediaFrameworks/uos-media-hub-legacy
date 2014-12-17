@@ -1,6 +1,4 @@
-"use strict";
-
-var extend = require('util-extend');
+'use strict';
 
 // default dev config
 var config = {
