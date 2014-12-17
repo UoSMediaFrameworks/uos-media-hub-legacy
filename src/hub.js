@@ -7,9 +7,19 @@ var bcrypt = require('bcrypt-nodejs'),
     path = require('path'),
     mongo = require('mongojs');
 
-var hat = require('hat');
+var session = require('./session');
 
 var _validTokens = {};
+
+function throwErr (func) {
+    return function(err, data) {
+        if (err) {
+            throw err;  
+        } else {
+            func.call(null, data);
+        }
+    };
+}
 
 function addApiCalls (hub, io, socket) {
 
@@ -59,7 +69,8 @@ function addApiCalls (hub, io, socket) {
 
 var Hub = function(config) {
     this.config = config;
-    this.db = mongo.connect(config.mongo, ['mediaScenes']);
+    this.db = mongo.connect(config.mongo, ['mediaScenes', 'sessions']);
+    session.setClient(this.db);
 };
 
 Hub.prototype.listen = function(callback) {
@@ -74,28 +85,30 @@ Hub.prototype.listen = function(callback) {
 
     io.sockets.on('connection', function (socket) {
         var authed = false;
-        var returnToken;
         socket.on('auth', function (creds, callback) {
-            if (creds.hasOwnProperty('password')) {
-                authed = bcrypt.compareSync(creds.password, self.config.secret);    
-            } else if (creds.hasOwnProperty('token')) {
-                returnToken = creds.token;
-                authed = _validTokens.hasOwnProperty(returnToken);
-            }
-            
-            if (authed) {
-                addApiCalls(self, io, socket);
-                
-                if (! returnToken) {
-                    returnToken = hat();
-                    _validTokens[returnToken] = null;
+ 
+            function respond (record) {
+                if (record) {
+                    addApiCalls(self, io, socket);
+                    callback(record._id.toString());
+                } else {
+                    callback(false);
+                    socket.disconnect();
                 }
-                
-                callback(returnToken);
-            } else {
-                callback(false);
-                socket.disconnect();
             }
+
+            if (creds.hasOwnProperty('password')) {
+                if ( bcrypt.compareSync(creds.password, self.config.secret) ) {
+                    session.create(throwErr(respond));
+                } else {
+                    respond();
+                }
+
+            } else if (creds.hasOwnProperty('token')) {
+                session.find(creds.token, throwErr(respond));
+            } else {
+                respond();
+            }  
         });
 
     
