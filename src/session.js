@@ -22,7 +22,7 @@ module.exports = {
     },
 
     create: requireClient(function create(cb) {
-        _sessions.save({}, cb);
+        _sessions.save({created: new Date()}, cb);
     }),
 
     find: requireClient(function find(id, cb) {
