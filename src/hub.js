@@ -22,10 +22,12 @@ function throwErr (func) {
 }
 
 function addApiCalls (hub, io, socket) {
+    function idSearch (id) {
+        return {_id: mongo.ObjectId(id)};
+    }
 
     function _findScene (sceneId, cb) {
-        var search = {_id: mongo.ObjectId(sceneId)};
-        return hub.db.mediaScenes.findOne(search, cb);
+        return hub.db.mediaScenes.findOne(idSearch(sceneId), cb);
     }
 
     socket.on('listScenes', function(callback) {
@@ -51,6 +53,12 @@ function addApiCalls (hub, io, socket) {
     });
 
     socket.on('loadScene', _findScene);
+
+    socket.on('deleteScene', function(sceneId, callback) {
+        hub.db.mediaScenes.remove(idSearch(sceneId), function(err) {
+            callback(err);
+        });
+    });
 
     socket.on('subScene', function(sceneId, callback) {
         _findScene(sceneId, function(err, scene) {

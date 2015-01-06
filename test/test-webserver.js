@@ -222,6 +222,19 @@ describe('Hub', function () {
             });
         });
 
+        describe('HubClient.deleteScene()', function () {
+            it('should delete a scene identified by an id', function () {
+                var self = this;
+                return self.client.saveScene({name: 'scenester'}).then(function(scene) {
+                    return self.client.deleteScene(scene._id).then(function(err) {
+                        return self.client.loadScene(scene._id).then(function(err, newScene) {
+                            assert(! newScene);
+                        });
+                    });
+                });
+            });
+        });
+
         describe('HubClient.unsubScene()', function () {
             beforeEach(function () {
                 var self = this;
