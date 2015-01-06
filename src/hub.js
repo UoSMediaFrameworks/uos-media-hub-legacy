@@ -29,7 +29,7 @@ function addApiCalls (hub, io, socket) {
     }
 
     socket.on('listScenes', function(callback) {
-        hub.db.mediaScenes.find({}, {name: 1}, function(err, sceneNames) {
+        hub.db.mediaScenes.find({'$query': {}, '$orderby': {name: 1}}, {name: 1}, function(err, sceneNames) {
             if (err) {
                 callback([]);
             } else {
