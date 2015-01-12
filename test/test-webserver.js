@@ -103,6 +103,14 @@ describe('Hub', function () {
                 );
             });
 
+            it('should reject promise when not given a password', function() {
+                return this.client.connect(hubUrl, {password: null}).then(
+                    function() { assert.fail('promise fulfilled'); },
+                    function() {}
+                );
+            });
+
+
             it('should reject promise when given invalid password', function() {
                 return this.client.connect(hubUrl, {password: 'puppies'}).then(
                     function() { assert.fail('promise fulfilled'); },

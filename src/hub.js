@@ -98,28 +98,28 @@ Hub.prototype.listen = function(callback) {
 
         socket.on('auth', function (creds, callback) {
  
-            function respond (record) {
-                if (record) {
-                    addApiCalls(self, io, socket);
-                    clearTimeout(disconnectTimer);
-                    callback(record._id.toString());
-                } else {
-                    callback(false);
-                    socket.disconnect();
-                }
+            function succeed (record) {
+                addApiCalls(self, io, socket);
+                clearTimeout(disconnectTimer);
+                callback(record._id.toString());
             }
 
-            if (creds.hasOwnProperty('password')) {
+            function fail (msg) {
+                callback(null, msg);
+                socket.disconnect();
+            }
+
+            if (creds.hasOwnProperty('password') && creds.password && creds.password !== '') {
                 if ( bcrypt.compareSync(creds.password, self.config.secret) ) {
-                    session.create(throwErr(respond));
+                    session.create(throwErr(succeed));
                 } else {
-                    respond();
+                    fail('Invalid Password');
                 }
 
-            } else if (creds.hasOwnProperty('token')) {
-                session.find(creds.token, throwErr(respond));
+            } else if (creds.hasOwnProperty('token') && creds.token && creds.token !== '') {
+                session.find(creds.token, throwErr(succeed));
             } else {
-                respond();
+                fail('Password must be provided');
             }  
         });
 
