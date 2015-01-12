@@ -117,7 +117,13 @@ Hub.prototype.listen = function(callback) {
                 }
 
             } else if (creds.hasOwnProperty('token') && creds.token && creds.token !== '') {
-                session.find(creds.token, throwErr(succeed));
+                session.find(creds.token, function(err, data) {
+                        if (data) {
+                            succeed(data);
+                        } else {
+                            fail(); 
+                        }
+                    });
             } else {
                 fail('Password must be provided');
             }  
