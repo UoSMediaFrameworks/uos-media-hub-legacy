@@ -91,6 +91,9 @@ Hub.prototype.listen = function(callback) {
 
     this.server = server;
 
+    // allow cross origin requests
+    io.set('origins', '*:*');
+
     io.sockets.on('connection', function (socket) {
         var disconnectTimer = setTimeout(function() {
             socket.disconnect();
