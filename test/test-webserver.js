@@ -1,5 +1,18 @@
 "use strict";
 
+// try to load the config
+var config;
+try {
+    config = require('../config');
+} catch (e) {
+    config = {
+        secret: process.env.HUB_SECRET,
+        mongo: process.env.HUB_MONGO,
+        port: process.env.PORT,
+    };
+}
+
+
 var hub = require(__dirname + '/../src/hub'),
     http = require('q-io/http'),
     assert = require('assert'),
@@ -11,7 +24,6 @@ var hub = require(__dirname + '/../src/hub'),
         transports: ['websocket'],
         forceNew: true
     },
-    config = require('../config'),
     hubUrl = 'http://localhost:' + config.port;
 
 describe('Hub', function () {
