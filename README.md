@@ -1,28 +1,23 @@
 MediaHub [![Build Status](https://travis-ci.org/Colum-SMA-Dev/MediaHub.svg?branch=master)](https://travis-ci.org/Colum-SMA-Dev/MediaHub)
 ========
 
-Implementation of MediaHub API
+## Development
 
-Media Hub Client
---------
+After cloning the repository, install the dependencies:
 
-The hub serves a javascript library to be used for connecting back to the hub.  It is reachable at `http://<domain>:<port>/hub-api.js`.  
+```
+npm install
+```
 
-##### `HubClient(url, socketIoOpts)`
+Copy the example config file
 
-Creates and returns a new instance of a HubClient.  
+```
+cp config-example.js config.js
 
-* `url` hosted location of hub
-* `socketIoOpts` object that will be passed to [socket.io client constructor](http://socket.io/docs/client-api/)
+Start up the server
 
-##### `authenticate(password)`
+```
+node app.js
+```
 
-Returns a promise that is fulfilled on succesful authentication, and rejected on failed.
 
-* `password` configured password on the Hub
-
-##### `saveScene(mediaScene)`
-
-Returns a promise that is fulfilled on succesful saving of scene to the database.  Promise is rejected if saving fails.
-
-* `mediaScene` Object that represents a MediaScene
