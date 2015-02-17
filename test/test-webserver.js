@@ -9,6 +9,9 @@ try {
         secret: process.env.HUB_SECRET,
         mongo: process.env.HUB_MONGO,
         port: process.env.PORT,
+        vimeoClientId: process.env.VIMEO_CLIENT_ID,
+        vimeoClientSecret: process.env.VIMEO_CLIENT_SECRET,
+        vimeoAccessToken: process.env.VIMEO_ACCESS_TOKEN
     };
 }
 
@@ -20,11 +23,13 @@ var hub = require(__dirname + '/../src/hub'),
     q = require('q'),
     _ = require('lodash'),
     hubClient = require('media-hub-client'),
+    session = require('../src/session'),
     socketOps = {
         transports: ['websocket'],
         forceNew: true
     },
-    hubUrl = 'http://localhost:' + config.port;
+    hubUrl = 'http://localhost:' + config.port,
+    request = require('supertest')(hubUrl);
 
 describe('Hub', function () {
     var hubApp,
@@ -279,6 +284,42 @@ describe('Hub', function () {
             });
         });
         
+    });
+
+
+    describe('/api', function () {
+        beforeEach(function(done) {
+            // make a session to use for tests
+            session.create(function(err, data) {
+                this.sessionToken = data._id.toString();
+                done();
+            }.bind(this));
+        });
+
+        describe('/vimeo-tags', function () {
+
+            beforeEach(function() {
+                this.request = request.get('/api/vimeo-tags');
+            });
+
+            it('should respond with a 401 when no token is provided', function (done) {
+                this.request.expect(401, done);                    
+            });
+
+            it('should respond with a 200 and tags when token and videoId is provided', function (done) {
+                // need to mock the vimeo api at some point
+                this.request.query({token: this.sessionToken, vimeoId: '119887479'})
+                    .expect(200)
+                    .end(function(err, res) {
+                        assert.deepEqual(res.body, ["Train", " Brown line", " Northbound", " Evening"]);
+                        done();
+                    });
+            });
+
+            it('should respond with a 400 when invalid videoID is given', function (done) {
+                this.request.query({token: this.sessionToken, vimeoId: 'invalidexampleid'}).expect(400, done);
+            });
+        });
     });
 
     
