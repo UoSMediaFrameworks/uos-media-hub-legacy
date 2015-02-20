@@ -11,6 +11,7 @@ var Vimeo = require('vimeo-api').Vimeo;
 var util = require('util');
 var session = require('./session');
 var _ = require('lodash');
+var cors = require('cors');
 
 var _validTokens = {};
 
@@ -91,9 +92,9 @@ Hub.prototype.listen = function(callback) {
         server = http.Server(app),
         io = new Server(server);
 
-    server.listen(self.config.port, callback);
-
     this.server = server;
+
+    app.use(cors());
 
     // require a valid session token for all api calls
     var validateSession =  function(req, res, next) {
@@ -160,6 +161,8 @@ Hub.prototype.listen = function(callback) {
         });
         
     });
+
+    server.listen(self.config.port, callback);
 };
 
 Hub.prototype.close = function(cb) {

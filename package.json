@@ -19,6 +19,7 @@
   "homepage": "https://github.com/Colum-SMA-Dev/MediaHub",
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
+    "cors": "^2.5.3",
     "express": "^4.10.1",
     "lodash": "^2.4.1",
     "media-hub-client": "git+https://git@github.com/Colum-SMA-Dev/MediaHubClient.git",
