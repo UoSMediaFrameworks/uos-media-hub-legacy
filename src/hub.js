@@ -7,7 +7,6 @@ var bcrypt = require('bcrypt-nodejs'),
     path = require('path'),
     mongo = require('mongojs');
 
-var Vimeo = require('vimeo-api').Vimeo;
 var util = require('util');
 var session = require('./session');
 var _ = require('lodash');
@@ -83,7 +82,6 @@ var Hub = function(config) {
     this.config = config;
     this.db = mongo.connect(config.mongo, ['mediaScenes', 'sessions']);
     session.setClient(this.db);
-    this.vimeoClient = new Vimeo(config.vimeoClientId, config.vimeoClientSecret, config.vimeoAccessToken);
 };
 
 Hub.prototype.listen = function(callback) {
@@ -106,19 +104,6 @@ Hub.prototype.listen = function(callback) {
             }
         });
     };
-
-    // api for vimeo tags
-    app.get('/api/vimeo-tags', validateSession, function(req, res) {
-        var params = {method: 'GET', path: util.format('/videos/%s/tags', req.query.vimeoId)};
-        self.vimeoClient.request(params, function(error, body, statusCode, headers) {
-            if (error) {
-                res.status(400).send(error);
-            } else {
-                var tags = _.pluck(body.data, 'tag');
-                res.json(tags);    
-            }
-        });
-    });
 
     // allow cross origin requests
     io.set('origins', '*:*');
