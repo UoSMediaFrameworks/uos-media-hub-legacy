@@ -23,7 +23,6 @@
     "cors": "^2.5.3",
     "express": "^4.10.1",
     "lodash": "^2.4.1",
-    "media-hub-client": "git+https://git@github.com/Colum-SMA-Dev/MediaHubClient.git",
     "mocha": "^2.0.1",
     "mongo-migrate": "^0.1.0",
     "mongodb": "^1.4.23",
