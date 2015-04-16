@@ -14,12 +14,10 @@ try {
 
 
 var hub = require(__dirname + '/../src/hub'),
-    http = require('q-io/http'),
     assert = require('assert'),
-    fs = require('q-io/fs'),
-    q = require('q'),
+    io = require('socket.io-client'),
+    async = require('async'),
     _ = require('lodash'),
-    hubClient = require('media-hub-client'),
     session = require('../src/session'),
     socketOps = {
         transports: ['websocket'],
@@ -30,17 +28,8 @@ var hub = require(__dirname + '/../src/hub'),
 
 describe('Hub', function () {
     var hubApp,
-        clearDatabase = function() {
-            var deferred = q.defer();
-            hubApp.db.mediaScenes.remove({}, function(err, count) {
-                if (err) {
-                    deferred.reject(err);
-                } else {
-                    deferred.resolve(count);
-                }
-            });
-
-            return deferred.promise;
+        clearDatabase = function(callback) {
+            hubApp.db.mediaScenes.remove({}, callback);
         };
 
     before(function (done) {
@@ -65,221 +54,228 @@ describe('Hub', function () {
         hubApp.close();
     });
 
-    afterEach(function () {
-        return clearDatabase();
+    afterEach(function (done) {
+        clearDatabase(done);
     });
 
     it('should exist', function () {
         assert(hubApp);
     });
 
-    describe('HubClient', function () {
+    describe('socket API', function () {
 
-        beforeEach(function() {
-            this.client = hubClient(socketOps);
+        beforeEach(function(done) {
+            this.socket = io(hubUrl,socketOps);
+            this.socket.on('connect', function() {
+                done();
+            });
         });
 
         afterEach(function() {
-            this.client.disconnect();
+            this.socket.disconnect();
         });
 
-        describe('HubClient()', function() {
-            it('should return an object of sorts', function() {
-                var client = this.client.connect(hubUrl, {password: 'kittens'});
-                assert(client !== null && typeof client === 'object');
-            });
-        });
 
-        describe('HubClient.connect()', function () {
-            it('should fulfill promise when given valid password', function() {
-                return this.client.connect(hubUrl, {password: 'kittens'}).then(
-                    function() {},
-                    function() { assert.fail('promise rejected'); }
-                );
-            });
-
-            it('should fulfill promise with a token', function () {
-                return this.client.connect(hubUrl, {password: 'kittens'}).then(
-                    function(token) {
-                        assert.equal(typeof token, 'string');
-                    },
-                    function() { assert.fail('promise rejected'); }
-                ); 
-            });
-
-            it('should fulfill promise when given a token with same token', function () {
-                return this.client.connect(hubUrl, {password: 'kittens'}).then(
-                    function(token) {
-                        hubClient(socketOps).connect(hubUrl, {token: token}).then(function(secondToken) {
-                            assert.equal(token, secondToken);
-                        });
-                    }
-                );
-            });
-
-            it('should reject promise when not given a password', function() {
-                return this.client.connect(hubUrl, {password: null}).then(
-                    function() { assert.fail('promise fulfilled'); },
-                    function() {}
-                );
-            });
-
-
-            it('should reject promise when given invalid password', function() {
-                return this.client.connect(hubUrl, {password: 'puppies'}).then(
-                    function() { assert.fail('promise fulfilled'); },
-                    function() {}
-                );
-            });
-
-            it('should reject promise when given invalid token', function() {
-                return this.client.connect(hubUrl, {token: '9487asnotheu'}).then(
-                    function() { assert.fail('promise fulfilled'); },
-                    function() {}
-                );
-            });
-        });
-    });
-
-    describe('connected HubClient', function () {
-        beforeEach(function() {
-            this.client = hubClient(socketOps);
-            return this.client.connect(hubUrl, {password: 'kittens'});
-        });
-
-        afterEach(function () {
-            this.client.disconnect();
-        });
-
-        describe('HubClient.saveScene()', function () {
-            it('should resolve a promise successfully when scene is saved', function () {
-                return this.client.saveScene({name: 'scene1', heu: 3});
-            });
-
-            it('should include the saved scene in the resolved promise', function () {
-                return this.client.saveScene({name: 'scene1', heu: 3}).then(function(scene) {
-                    assert(scene !== null && typeof scene === 'object');
-                });
-            });
-
-            it('should be loadable with loadScene', function () {
-                var self = this;
-                return self.client.saveScene({name: 'aosenhtua', heu: 3}).then(function(savedScene) {
-                    return self.client.loadScene(savedScene._id).then(function(loadedScene) {
-                        assert.deepEqual(savedScene, loadedScene);
-                    });
-                });
-            });
-
-            it('should update an existing scene when saved, not create a new one', function () {
-            	var self = this;
-            	return self.client.saveScene({name: 'aosenhtua', heu: 3}).then(function(savedScene) {
-                    return self.client.saveScene(savedScene).then(function(s2) {
-                    	return self.client.listScenes().then(function(scenes) {
-                    		assert.equal(scenes.length, 1);
-                    	});
-                    });
-                });
-            });
-        });
-
-        describe('HubClient.listScenes()', function () {
-
-            beforeEach(function () {
-                var self = this;
-                
-                return q.all([
-                    self.client.saveScene({name: 'a'}),
-                    self.client.saveScene({name: 'b'}),
-                    self.client.saveScene({name: 'c'})
-                ]).then(function() {
-                    return self.client.listScenes().then(function(scenes) {
-                        self.scenes = scenes; 
-                    });
-                });
-            });
-
-            it('should return all scenes', function () {
-                assert.equal(this.scenes.length, 3); 
-            });
-
-            it('should only include name and _id properties', function () {
-                var keys = _.uniq(_.flatten(_.map(this.scenes, function(s) { return _.keys(s); })));
-                assert.deepEqual(_.sortBy(keys), _.sortBy(['name', '_id']));
-            });
-        });
-
-        describe('HubClient.subScene()', function () {
-        	beforeEach(function () {
-        		var self = this;
-        		return this.client.saveScene({name: 'a'}).then(function(scene) {
-        			self.scene = scene;
-        		});
-        	});
-
-        	it('should return scene that was subscribed to', function () {
-        		var self = this;
-        		return self.client.subScene(self.scene._id, function() {}).then(function(scene) {
-        			assert.deepEqual(self.scene, scene);
-        		});
-        	});
-
-            it('should call the subScene handler when a scene gets updated', function (done) {
-                var self = this;
-                var newScene;
-                var handler = function(updatedScene) {
-                    assert.deepEqual(newScene, updatedScene);
+        describe('"auth", {password: <valid password>}, callback(err, token)', function () {
+            it('should invoke callback with a token', function(done) {
+                this.socket.emit('auth', {password: 'kittens'}, function(err, token) {
+                    assert(token);
                     done();
-                };
+                });
+            });
 
-                self.client.subScene(self.scene._id, handler).then(function() {
-                    // connect with another client and update the scene
-                    var otherClient = hubClient(socketOps);
-                    otherClient.connect(hubUrl, {password: 'kittens'}).then(function() {
-                        newScene = self.scene;
-                        newScene.newKey = 'blah';
-                        otherClient.saveScene(newScene);
+            it('should invoke callback with a token when given same token', function (done) {
+                this.socket.emit('auth', {password: 'kittens'}, function(err, token) { 
+                    var sock2 = io(hubUrl, socketOps);
+                    sock2.on('connect', function() {
+                        sock2.emit('auth', {token: token}, function(err, secondToken) {
+                            assert.equal(token, secondToken);
+                            done();
+                        });
+                        
                     });
-                }); 
+                });
             });
         });
 
-        describe('HubClient.deleteScene()', function () {
-            it('should delete a scene identified by an id', function () {
-                var self = this;
-                return self.client.saveScene({name: 'scenester'}).then(function(scene) {
-                    return self.client.deleteScene(scene._id).then(function(err) {
-                        return self.client.loadScene(scene._id).then(function(err, newScene) {
-                            assert(! newScene);
+        describe('"auth", {password: null}, callback(err, token)', function () {
+            it('should invoke callback with an error message', function(done) {
+                this.socket.emit('auth', {password: null}, function(err, token) {
+                    assert(err);
+                    done();
+                });
+                
+            });
+
+        });
+
+            
+        describe('"auth", {password: <invalid password>}, callback(err, token)', function () {
+           it('should invoke callback with an error message', function(done) {
+               this.socket.emit('auth', {password: null}, function(err, token) {
+                   assert(err);
+                   done();
+               });
+           }); 
+        });
+           
+        describe('"auth", {token: <invalid token>}, callback(err, token)', function () {
+            it('should invoke callback with an error message', function(done) {
+                this.socket.emit('auth', {token: '9487asnotheu'}, function(err, token) {
+                    assert(err);
+                    done();
+                });
+            }); 
+        });
+
+        describe('after valid "auth"', function () {
+            beforeEach(function (done) {
+                this.socket.emit('auth', {password: 'kittens'}, done);
+            });
+
+
+            describe('"saveScene", sceneObj, callback(err, scene)', function () {
+                it('should resolve callback with saved scene', function (done) {
+                    this.socket.emit('saveScene', {name: 'scene1', heu: 3}, function(err, scene) {
+                        assert(scene);
+                        done();
+                    });
+                });
+
+                it('should update a scene if it already exists', function (done) {
+                    var self = this;
+                    self.socket.emit('saveScene', {name: 'aosenhtua', heu: 3}, function(err, savedScene) {
+                        self.socket.emit('saveScene', savedScene, function(err, s2) {
+                            self.socket.emit('listScenes', function(err, scenes) {
+                                assert.equal(scenes.length, 1);
+                                done();
+                            });
                         });
                     });
                 });
             });
-        });
 
-        describe('HubClient.unsubScene()', function () {
-            beforeEach(function () {
-                var self = this;
-                return this.client.saveScene({name: 'a'}).then(function(scene) {
-                    self.scene = scene;
-                    return self.client.subScene(scene._id, function() {
-                        self.handler();
+            describe('"loadScene", sceneId, callback(err, scene)', function () {
+                it('should resolve callback with a scene', function(done) {
+                    var self = this;
+                    this.socket.emit('saveScene', {name: 'aosenhtua', heu: 3}, function(err, savedScene) {
+                        self.socket.emit('loadScene', savedScene._id, function(err, loadedScene) {
+                            assert.deepEqual(savedScene, loadedScene);
+                            done();
+                        });
                     });
                 });
             });
 
-            it('should not call handler after scene gets updated', function () {
-                var self = this;
-                self.handler = function() {
-                    assert.fail('handler was called');
-                };
+            describe('"listScenes", callback(err, sceneList)', function () {
+                beforeEach(function (done) {
+                    var self = this;
+                    async.parallel([
+                        function(cb) {
+                            self.socket.emit('saveScene', {name: 'a'}, cb);
+                        },
+                        function(cb) {
+                            self.socket.emit('saveScene', {name: 'b'}, cb);
+                        },
+                        function(cb) {
+                            self.socket.emit('saveScene', {name: 'c'}, cb);
+                        }
+                    ], function(err, results) {
+                        self.socket.emit('listScenes', function(err, sceneList) {
+                            self.sceneList = sceneList;
+                            done();
+                        });
+                    });
+                });
 
-                return self.client.unsubScene(self.scene._id).then(function() {
-                    self.scene.foo = 'bar';
-                    return self.client.saveScene(self.scene);
+                it('should return all scenes', function () {
+                    assert.equal(this.sceneList.length, 3); 
+                });
+
+                it('should only include name and _id properties', function () {
+                    var keys = _.uniq(_.flatten(_.map(this.sceneList, function(s) { return _.keys(s); })));
+                    assert.deepEqual(_.sortBy(keys), _.sortBy(['name', '_id']));
+                });
+            });
+
+            describe('"subScene", sceneId, callback(err, scene)', function () {
+                beforeEach(function (done) {
+                    this.socket.emit('saveScene', {name: 'a'}, function(err, scene) {
+                        this.scene = scene;
+                        done();
+                    }.bind(this));
+                });
+
+
+                it('should invoke the callback with the requested scene', function (done) {
+                    this.socket.emit('subScene', this.scene._id, function(err, scene) {
+                        assert.deepEqual(this.scene, scene);
+                        done();
+                    }.bind(this));
+                });
+
+                it('should cause socket to recieve "sceneUpdate" messages when that scene gets updated', function (done) {
+                    var self = this;
+                    this.socket.emit('subScene', this.scene._id, function() {
+                        var otherSocket = io(hubUrl, socketOps);
+                        otherSocket.on('connect', function() {
+                            otherSocket.emit('auth', {password: 'kittens'}, function() {
+                                self.scene.newKey = 'blah';
+                                otherSocket.emit('saveScene', self.scene);    
+                            });
+                        });
+                    });
+
+                    this.socket.on('sceneUpdate', function(sceneData) {
+                        assert.deepEqual(self.scene, sceneData);
+                        done();
+                    });
+                });
+            });
+
+            describe('"deleteScene", sceneId, callback(err)', function () {
+                it('should delete a scene', function (done) {
+                    var self = this;
+                    self.socket.emit('saveScene', {name: 'a'}, function(err, scene) {
+                        self.socket.emit('deleteScene', scene._id, function(err) {
+                             self.socket.emit('loadScene', scene._id, function(err, newScene) {
+                                assert(! newScene);
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+
+            describe('"unsubScene", sceneId, callback(err)', function () {
+                beforeEach(function (done) {
+                    this.socket.emit('saveScene', {name: 'a'}, function(err, scene) {
+                        this.scene = scene;
+                        done();
+                    }.bind(this));
+                });
+
+                it('should prevent socket from recieving "sceneUpdate" messages when that scene gets updated', function (done) {
+                    var self = this;
+                    this.socket.emit('subScene', this.scene._id, function() {
+                        var otherSocket = io(hubUrl, socketOps);
+                        otherSocket.on('connect', function() {
+                            otherSocket.emit('auth', {password: 'kittens'}, function() {
+                                self.socket.emit('unsubScene', self.scene._id, function(err) {
+                                    self.scene.newKey = 'blah';
+                                    otherSocket.emit('saveScene', self.scene, function(err, scene) {
+                                        done();
+                                    });        
+                                });
+                            });
+                        });
+                    });
+
+                    this.socket.on('sceneUpdate', function(sceneData) {
+                        done('sceneUpdate message recieved');
+                    });
                 });
             });
         });
-        
     });
 });

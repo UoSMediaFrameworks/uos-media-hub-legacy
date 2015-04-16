@@ -34,13 +34,7 @@ function addApiCalls (hub, io, socket) {
     }
 
     socket.on('listScenes', function(callback) {
-        hub.db.mediaScenes.find({'$query': {}, '$orderby': {name: 1}}, {name: 1}, function(err, sceneNames) {
-            if (err) {
-                callback([]);
-            } else {
-                callback(sceneNames);
-            }
-        });
+        hub.db.mediaScenes.find({'$query': {}, '$orderby': {name: 1}}, {name: 1}, callback);
     });
     
     socket.on('saveScene', function(sceneData, callback) {
@@ -51,7 +45,10 @@ function addApiCalls (hub, io, socket) {
 
         hub.db.mediaScenes.save(sceneData, function(err, scene) {
             io.to(scene._id.toString()).emit('sceneUpdate', scene);
-            callback(err, scene);
+            
+            if (callback) {
+                callback(err, scene);
+            }
         });
     });
 
@@ -75,6 +72,10 @@ function addApiCalls (hub, io, socket) {
             socket.leave(sceneId); 
             callback(err);
         });
+    });
+
+    socket.on('sendCommand', function(sceneId, commandName, commandValue) {
+        io.to(sceneId).emit('command', {name: commandName, value: commandValue});
     });
 }
 
@@ -117,11 +118,11 @@ Hub.prototype.listen = function(callback) {
             function succeed (record) {
                 addApiCalls(self, io, socket);
                 clearTimeout(disconnectTimer);
-                callback(record._id.toString());
+                callback(null, record._id.toString());
             }
 
             function fail (msg) {
-                callback(null, msg);
+                callback(msg);
                 socket.disconnect();
             }
 
@@ -137,7 +138,7 @@ Hub.prototype.listen = function(callback) {
                         if (data) {
                             succeed(data);
                         } else {
-                            fail(); 
+                            fail('Invalid Token'); 
                         }
                     });
             } else {
