@@ -81,8 +81,12 @@ function addApiCalls (hub, io, socket) {
         });
     });
 
-    socket.on('sendCommand', function(sceneId, commandName, commandValue) {
-        io.to(sceneId).emit('command', {name: commandName, value: commandValue});
+    socket.on('sendCommand', function(roomId, commandName, commandValue) {
+        io.to(roomId).emit('command', {name: commandName, value: commandValue});
+    });
+
+    socket.on('register', function(roomId) {
+        socket.join(roomId);
     });
 }
 
