@@ -62,15 +62,20 @@ function addApiCalls (hub, io, socket) {
 
     socket.on('subScene', function(sceneId, callback) {
         _findScene(sceneId, function(err, scene) {
-            socket.join(sceneId); 
-            callback(err, scene);
+            socket.join(sceneId);
+            
+            if (callback) {
+                callback(err, scene);    
+            } 
         });
     });
 
     socket.on('unsubScene', function(sceneId, callback) {
         _findScene(sceneId, function(err, scene) {
             socket.leave(sceneId); 
-            callback(err);
+            if (callback) {
+                callback(err);
+            }
         });
     });
 
