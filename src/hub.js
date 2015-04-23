@@ -54,6 +54,10 @@ function addApiCalls (hub, io, socket) {
 
     socket.on('loadScene', _findScene);
 
+    socket.on('loadSceneByName', function(name, callback) {
+        hub.db.mediaScenes.findOne({name: name}, callback);
+    });
+
     socket.on('deleteScene', function(sceneId, callback) {
         hub.db.mediaScenes.remove(idSearch(sceneId), function(err) {
             if (callback) {
