@@ -77,9 +77,10 @@ describe('Hub', function () {
 
 
         describe('"auth", {password: <valid password>}, callback(err, token)', function () {
-            it('should invoke callback with a token', function(done) {
-                this.socket.emit('auth', {password: 'kittens'}, function(err, token) {
+            it('should invoke callback with a token and a room id', function(done) {
+                this.socket.emit('auth', {password: 'kittens'}, function(err, token, roomId) {
                     assert(token);
+                    assert(roomId);
                     done();
                 });
             });

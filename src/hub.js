@@ -133,7 +133,7 @@ Hub.prototype.listen = function(callback) {
             function succeed (record) {
                 addApiCalls(self, io, socket);
                 clearTimeout(disconnectTimer);
-                callback(null, record._id.toString());
+                callback(null, record._id.toString(), socket.id);
             }
 
             function fail (msg) {
