@@ -24,6 +24,28 @@ function throwErr (func) {
     };
 }
 
+function validateScene (sceneData) {
+    // convert _id so mongo recognizes it
+    if (sceneData.hasOwnProperty('_id')) {
+        sceneData._id = mongo.ObjectId(sceneData._id);
+    }
+
+    // add _ids to all mediaObjects
+    if (sceneData.hasOwnProperty('scene')) {
+        if (! Array.isArray(sceneData.scene) ) {
+            throw new Error('"scene" property must be an array of objects');
+        } else {
+            sceneData.scene.forEach(function(mediaObject) {
+                if (! mediaObject.hasOwnProperty('_id')) {
+                    mediaObject._id = mongo.ObjectId();
+                }
+            });    
+        }
+    }
+
+    return sceneData;
+}
+
 function addApiCalls (hub, io, socket) {
     function idSearch (id) {
         return {_id: mongo.ObjectId(id)};
@@ -38,18 +60,21 @@ function addApiCalls (hub, io, socket) {
     });
     
     socket.on('saveScene', function(sceneData, callback) {
-        // convert _id so mongo recognizes it
-        if (sceneData.hasOwnProperty('_id')) {
-            sceneData._id = mongo.ObjectId(sceneData._id);
-        }
-
-        hub.db.mediaScenes.save(sceneData, function(err, scene) {
-            io.to(scene._id.toString()).emit('sceneUpdate', scene);
+        try {
+            var data = validateScene(sceneData);
             
+            hub.db.mediaScenes.save(data, function(err, scene) {
+                io.to(scene._id.toString()).emit('sceneUpdate', scene);
+                
+                if (callback) {
+                    callback(err, scene);
+                }
+            });
+        } catch(err) {
             if (callback) {
-                callback(err, scene);
+                callback(err.message);
             }
-        });
+        }
     });
 
     socket.on('loadScene', _findScene);

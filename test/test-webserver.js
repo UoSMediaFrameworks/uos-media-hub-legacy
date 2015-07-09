@@ -129,28 +129,67 @@ describe('Hub', function () {
             }); 
         });
 
-        describe('after valid "auth"', function () {
+        describe('after valid "auth":', function () {
             beforeEach(function (done) {
                 this.socket.emit('auth', {password: 'kittens'}, done);
             });
 
 
-            describe('"saveScene", sceneObj, callback(err, scene)', function () {
-                it('should resolve callback with saved scene', function (done) {
-                    this.socket.emit('saveScene', {name: 'scene1', heu: 3}, function(err, scene) {
-                        assert(scene);
+            describe('"saveScene", sceneObj, callback(err, scene) with invalid scene', function () {
+                it('should resolve callback with an error', function (done) {
+                    this.socket.emit('saveScene', {name: 'bad scene', scene: {}}, function(err, scene) {
+                        assert(err);
                         done();
+                    });
+                });
+            });
+
+            describe('"saveScene", sceneObj, callback(err, scene) with valid scene', function () {
+
+                beforeEach(function (done) {
+                    var self = this;
+                    var sceneData = {
+                        name: 'scene1', 
+                        scene: [
+                            {
+                                'tags': '',
+                                'type': 'image',
+                                'url': 'http://www.history.com/news/wp-content/uploads/2013/03/neanderthals-rabbits.jpg'
+                            },
+                            {
+                                'tags': '',
+                                'type': 'image',
+                                'url': 'http://www.hollyoakvets.com/wp-content/uploads/2015/05/bunnies.jpg'
+                            }
+                        ]
+                    };
+                    this.socket.emit('saveScene', sceneData, function(err, scene) {
+                        self.error = err;
+                        self.scene = scene;
+                        done();
+                    });    
+                });
+
+                it('should resolve callback with saved scene', function () {
+                    assert(this.scene);
+                });
+
+                it('should add an _id property to the scene object', function () {
+                   assert(this.scene._id);
+                });
+
+                it('should add _id properties to all of the mediaObjects', function () {
+                    this.scene.scene.forEach(function(mediaObject) {
+                        assert(mediaObject._id);
                     });
                 });
 
                 it('should update a scene if it already exists', function (done) {
                     var self = this;
-                    self.socket.emit('saveScene', {name: 'aosenhtua', heu: 3}, function(err, savedScene) {
-                        self.socket.emit('saveScene', savedScene, function(err, s2) {
-                            self.socket.emit('listScenes', function(err, scenes) {
-                                assert.equal(scenes.length, 1);
-                                done();
-                            });
+                    this.socket.emit('saveScene', this.scene, function(err, s2) {
+                        self.socket.emit('listScenes', function(err, scenes) {
+                            assert.equal(scenes.length, 1);
+                            done();
                         });
                     });
                 });
