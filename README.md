@@ -1,7 +1,7 @@
 MediaHub [![Build Status](https://travis-ci.org/Colum-SMA-Dev/MediaHub.svg?branch=master)](https://travis-ci.org/Colum-SMA-Dev/MediaHub)
 ========
 
-## Development/Deployment
+## Development
 
 After cloning the repository, install the dependencies:
 
@@ -31,6 +31,10 @@ Start up the server like so
 ```
 ./env.sh node app.js
 ```
+
+## Deployment
+
+Follow all of the development steps.  However, depending on your hosting envirorment, it may make more sense to configure the environment variable through their UI.
 
 ## API
 
