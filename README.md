@@ -1,7 +1,7 @@
 MediaHub [![Build Status](https://travis-ci.org/Colum-SMA-Dev/MediaHub.svg?branch=master)](https://travis-ci.org/Colum-SMA-Dev/MediaHub)
 ========
 
-## Development
+## Development/Deployment
 
 After cloning the repository, install the dependencies:
 
@@ -9,7 +9,10 @@ After cloning the repository, install the dependencies:
 npm install
 ```
 
-Copy the example environment file and edit as you'd like.  
+Copy the example environment file and edit as you'd like.  Here's what they do:
+* `HUB_SECRET` - A password hash done with bcrypt.  Compute your bcrypt has and set this to whatever you'd like.  The env-example.sh contains the bcrypt hash for 'kittens'.
+* `HUB_MONGO` - Mongo connection string to the mongo database.
+* `PORT` - Port that the application should listen on.
 
 ```
 cp env-example.sh env.sh
@@ -20,10 +23,6 @@ Start up the server like so
 ```
 ./env.sh node app.js
 ```
-
-## Deployment
-
-Run as you would any node application.  You'll need to set the appropriate environment variables that are listed in [env-example.sh](env-example.sh)
 
 ## API
 
