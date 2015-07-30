@@ -9,14 +9,16 @@ After cloning the repository, install the dependencies:
 npm install
 ```
 
-Copy the example environment file and edit as you'd like.  Here's what they do:
-* `HUB_SECRET` - A password hash done with bcrypt.  Compute your bcrypt has and set this to whatever you'd like.  The env-example.sh contains the bcrypt hash for 'kittens'.
-* `HUB_MONGO` - Mongo connection string to the mongo database.
-* `PORT` - Port that the application should listen on.
+Copy the example environment file and edit as you'd like.  
 
 ```
 cp env-example.sh env.sh
 ```
+
+Here's what they do:
+* `HUB_SECRET` - A password hash done with bcrypt.  Compute your bcrypt has and set this to whatever you'd like.  The env-example.sh contains the bcrypt hash for 'kittens'.
+* `HUB_MONGO` - Mongo connection string to the mongo database.
+* `PORT` - Port that the application should listen on.
 
 Start up the server like so
 
