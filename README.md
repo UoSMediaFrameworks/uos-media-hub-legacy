@@ -68,7 +68,7 @@ Upon connection of the socket, the client should emit an `"auth"` event.  The au
 
 Save a Scene to the database.
 
-##### loadScene
+#### loadScene
 
 `"loadScene", "<id of scene>", callback(error, scene)`
 
@@ -79,37 +79,37 @@ Get contents of a scene.  Server will reply with json object representing the sc
 Get contents of a scene.  Server will reply with json object representing the scene. If more than one scene exists with that name, it'll return the first one.  
 
 
-##### deleteScene 
+#### deleteScene 
 
 `"deleteScene", "<id of scene>", optionalCallback(error)`
 
 Delete specified scene from the database.
 
-##### listScenes
+#### listScenes
 
 `"listScenes", callback(error, scenes)`
 
 Return a list of Scenes that can be subscribed to.  Will be an array of strings.
 
-##### subScene
+#### subScene
 
 `"subScene", "<id of scene>", optionalCallback(error, scene)`
 
 Subscribe to a Scene.  Server will reply with the current Scene object.  Additionally this will subscribe the client to updates to the Scene as it changes. 
 
-##### unsubScene
+#### unsubScene
 
 `"unsubScene", "<id of scene>", optionalCallback(error)`
 
 Unsubscribe from a Scene.
 
-##### register
+#### register
 
 `"register", "<room id>"`
 
 Register the client to recieve commands from other clients in that same room.
 
-##### sendCommand
+#### sendCommand
 
 `"sendCommand", "<room id>", "<commandName>", <command object>`
 
@@ -121,7 +121,7 @@ Will dispatch the "command" messages to any other clients that are registered in
 
 These are messages that you'll have to listen for on the socket. 
 
-##### sceneUpdate
+#### sceneUpdate
 
 `"sceneUpdate"`
 
@@ -133,7 +133,7 @@ socket.on('sceneUpdate', function(scene) {
 });
 ```
 
-##### command
+#### command
 
 `"command"`
 
