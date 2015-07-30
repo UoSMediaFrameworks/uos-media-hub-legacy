@@ -56,7 +56,7 @@ socket.on('connect', function() {
 
 ### Client Initiated Messages
 
-##### auth
+#### auth
 
 `"auth", {password: "<password>", token: "<token from previous session>"}, callback(error, token)`
 
