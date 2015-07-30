@@ -25,7 +25,7 @@ Start up the server like so
 
 Run as you would any node application.  You'll need to set the appropriate environment variables that are listed in [env-example.sh](env-example.sh)
 
-## The API
+## API
 
 
 What follows is a higher level description of the API that a Hub makes available to clients.  This API is meant to be implemented on top of the [Socket.io protocol](https://github.com/Automattic/socket.io-protocol), so it will be defined in terms of the Socket.io client.  Socket.io solves many of the issues that would be faced in attempting to implement our own WebSocket solution, and can be substituted out in the future if needed.
