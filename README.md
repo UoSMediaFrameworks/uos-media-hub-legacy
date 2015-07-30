@@ -62,33 +62,57 @@ socket.on('connect', function() {
 
 Upon connection of the socket, the client should emit an `"auth"` event.  The authentication object can either have the `password` key or the `token` key.  If either are valid the hub will respond with a token (will be same token if `token` was sent), otherwise the socket is closed.  If 10 seconds has elapsed and no `"auth"` event has been recieved, then the Hub will close the socket connection.
 
-##### `"saveScene", <Scene Object>, callback(error, scene)`
+#### saveScene
+
+`"saveScene", <Scene Object>, callback(error, scene)`
+
 Save a Scene to the database.
 
-##### `"loadScene", "<id of scene>", callback(error, scene)`
+##### loadScene
+
+`"loadScene", "<id of scene>", callback(error, scene)`
+
 Get contents of a scene.  Server will reply with json object representing the scene.
 
-##### `"loadScene", "<name of scene>", callback(error, scene)`
+`"loadScene", "<name of scene>", callback(error, scene)`
+
 Get contents of a scene.  Server will reply with json object representing the scene. If more than one scene exists with that name, it'll return the first one.  
 
 
-##### `"deleteScene", "<id of scene>", optionalCallback(error)`
+##### deleteScene 
+
+`"deleteScene", "<id of scene>", optionalCallback(error)`
+
 Delete specified scene from the database.
 
+##### listScenes
 
-##### `"listScenes", callback(error, scenes)`
+`"listScenes", callback(error, scenes)`
+
 Return a list of Scenes that can be subscribed to.  Will be an array of strings.
 
-##### `"subScene", "<id of scene>", optionalCallback(error, scene)`
+##### subScene
+
+`"subScene", "<id of scene>", optionalCallback(error, scene)`
+
 Subscribe to a Scene.  Server will reply with the current Scene object.  Additionally this will subscribe the client to updates to the Scene as it changes. 
 
-##### `"unsubScene", "<id of scene>", optionalCallback(error)`
+##### unsubScene
+
+`"unsubScene", "<id of scene>", optionalCallback(error)`
+
 Unsubscribe from a Scene.
 
-##### `"register", "<room id>"`
+##### register
+
+`"register", "<room id>"`
+
 Register the client to recieve commands from other clients in that same room.
 
-##### `"sendCommand", "<room id>", "<commandName>", <command object>`
+##### sendCommand
+
+`"sendCommand", "<room id>", "<commandName>", <command object>`
+
 Will dispatch the "command" messages to any other clients that are registered in the same room.
 
 
@@ -97,7 +121,10 @@ Will dispatch the "command" messages to any other clients that are registered in
 
 These are messages that you'll have to listen for on the socket. 
 
-##### `"sceneUpdate"`
+##### sceneUpdate
+
+`"sceneUpdate"`
+
 If you have previously subscribed to the scene using "subScene", your client will be sent update messages.  Listen for them like so:
 
 ```
@@ -106,7 +133,10 @@ socket.on('sceneUpdate', function(scene) {
 });
 ```
 
-##### `"command"`
+##### command
+
+`"command"`
+
 If a client triggers a "sendCommand" to a room, any client registered in that room will recieve the command.
 
 ```
