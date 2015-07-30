@@ -56,7 +56,10 @@ socket.on('connect', function() {
 
 ### Client Initiated Messages
 
-##### `"auth", {password: "<password>", token: "<token from previous session>"}, callback(error, token)`
+##### auth
+
+`"auth", {password: "<password>", token: "<token from previous session>"}, callback(error, token)`
+
 Upon connection of the socket, the client should emit an `"auth"` event.  The authentication object can either have the `password` key or the `token` key.  If either are valid the hub will respond with a token (will be same token if `token` was sent), otherwise the socket is closed.  If 10 seconds has elapsed and no `"auth"` event has been recieved, then the Hub will close the socket connection.
 
 ##### `"saveScene", <Scene Object>, callback(error, scene)`
