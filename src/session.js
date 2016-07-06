@@ -21,14 +21,14 @@ module.exports = {
         _sessions = _client.sessions;
     },
 
-    create: requireClient(function create(cb) {
-        _sessions.save({created: new Date()}, cb);
+    create: requireClient(function create(groupID, cb) {
+        _sessions.save({created: new Date(), _groupID: groupID}, cb);
     }),
 
     find: requireClient(function find(id, cb) {
         // some object ids might be invalid so ignore errors from there
         try {
-            var search = {_id: new mongo.ObjectId(id)};    
+            var search = {_id: new mongo.ObjectId(id)}
             return _sessions.findOne(search, cb);
         } catch(err) {
             cb(null, null);
