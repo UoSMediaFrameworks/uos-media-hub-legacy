@@ -39,7 +39,7 @@ function validateScene (sceneData) {
                 if (! mediaObject.hasOwnProperty('_id')) {
                     mediaObject._id = mongo.ObjectId();
                 }
-            });    
+            });   
         }
     }
 
@@ -56,13 +56,27 @@ function addApiCalls (hub, io, socket) {
     }
 
     socket.on('listScenes', function(callback) {
-        hub.db.mediaScenes.find({'$query': {}, '$orderby': {name: 1}}, {name: 1}, callback);
+        //console.log("listScenes");
+        //console.log("groupID: " + socket.groupID);
+        //AJF: if the groupID is 0 (admin) then list all scenes
+        if(socket.groupID == 0)
+            hub.db.mediaScenes.find({'$query': {}, '$orderby': {name: 1}}, {name: 1}, callback);
+        else
+        {
+            hub.db.mediaScenes.find({'$query': {_groupID: socket.groupID}, '$orderby': {name: 1}}, {name: 1}, callback);
+        }
     });
     
     socket.on('saveScene', function(sceneData, callback) {
         try {
+
+            console.log("saveScene");
+
             var data = validateScene(sceneData);
-            
+
+            //AJF: save the groupID acquired from the socket
+            data._groupID = socket.groupID;
+
             hub.db.mediaScenes.save(data, function(err, scene) {
                 io.to(scene._id.toString()).emit('sceneUpdate', scene);
                 
@@ -156,6 +170,8 @@ Hub.prototype.listen = function(callback) {
         socket.on('auth', function (creds, callback) {
  
             function succeed (record) {
+                //AJF: set the groupID on the socket to be used in further calls
+                socket.groupID = record._groupID;
                 addApiCalls(self, io, socket);
                 clearTimeout(disconnectTimer);
                 callback(null, record._id.toString(), socket.id);
@@ -167,18 +183,24 @@ Hub.prototype.listen = function(callback) {
             }
 
             if (creds.hasOwnProperty('password') && creds.password && creds.password !== '') {
+                //AJF: Compares the passwords and determines what group the user logging into belongs to
                 if ( bcrypt.compareSync(creds.password, self.config.secret) ) {
-                    session.create(throwErr(succeed));
+                    session.create(0, throwErr(succeed));
+                } else if (creds.password==self.config.secret_1) {
+                    session.create(1, throwErr(succeed));
+                }else if (creds.password==self.config.secret_2) {
+                    session.create(2, throwErr(succeed));
                 } else {
                     fail('Invalid Password');
                 }
 
             } else if (creds.hasOwnProperty('token') && creds.token && creds.token !== '') {
+                console.log("Finding session via token");
                 session.find(creds.token, function(err, data) {
                         if (data) {
                             succeed(data);
                         } else {
-                            fail('Invalid Token'); 
+                            fail('Invalid Token');
                         }
                     });
             } else {
