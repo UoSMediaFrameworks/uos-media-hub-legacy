@@ -187,16 +187,20 @@ Hub.prototype.listen = function(callback) {
                 if ( bcrypt.compareSync(creds.password, self.config.secret) ) {
                     session.create(0, throwErr(succeed));
                 } else if (bcrypt.compareSync(creds.password, self.config.secret_1)) {
-                    session.create(101, throwErr(succeed));
+                    session.create(1, throwErr(succeed));
                 } else if (bcrypt.compareSync(creds.password, self.config.secret_2)) {
+                    session.create(2, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_101)) {
+                    session.create(101, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_102)) {
                     session.create(102, throwErr(succeed));
-                } else if (bcrypt.compareSync(creds.password, self.config.secret_3)) {
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_103)) {
                     session.create(103, throwErr(succeed));
-                } else if (bcrypt.compareSync(creds.password, self.config.secret_4)) {
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_104)) {
                     session.create(104, throwErr(succeed));
-                } else if (bcrypt.compareSync(creds.password, self.config.secret_5)) {
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_105)) {
                     session.create(105, throwErr(succeed));
-                } else if (bcrypt.compareSync(creds.password, self.config.secret_6)) {
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_106)) {
                     session.create(106, throwErr(succeed));
                 } else {
                     fail('Invalid Password');

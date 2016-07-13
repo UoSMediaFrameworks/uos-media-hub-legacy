@@ -4,10 +4,12 @@ var config = {
 		secret: process.env.HUB_SECRET,
 		secret_1: process.env.HUB_SECRET_1,
 		secret_2: process.env.HUB_SECRET_2,
-		secret_3: process.env.HUB_SECRET_3,
-		secret_4: process.env.HUB_SECRET_4,
-		secret_5: process.env.HUB_SECRET_5,
-		secret_6: process.env.HUB_SECRET_6,
+		secret_101: process.env.HUB_SECRET_101,
+		secret_102: process.env.HUB_SECRET_102,
+		secret_103: process.env.HUB_SECRET_103,
+		secret_104: process.env.HUB_SECRET_104,
+		secret_105: process.env.HUB_SECRET_105,
+		secret_106: process.env.HUB_SECRET_106,
 		mongo: process.env.HUB_MONGO,
 		port: process.env.PORT
 };
