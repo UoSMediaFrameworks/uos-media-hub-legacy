@@ -228,10 +228,18 @@ Hub.prototype.listen = function(callback) {
                 //AJF: Compares the passwords and determines what group the user logging into belongs to
                 if ( bcrypt.compareSync(creds.password, self.config.secret) ) {
                     session.create(0, throwErr(succeed));
-                } else if (creds.password==self.config.secret_1) {
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_1)) {
                     session.create(1, throwErr(succeed));
-                }else if (creds.password==self.config.secret_2) {
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_2)) {
                     session.create(2, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_3)) {
+                    session.create(3, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_4)) {
+                    session.create(4, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_5)) {
+                    session.create(5, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_6)) {
+                    session.create(6, throwErr(succeed));
                 } else {
                     fail('Invalid Password');
                 }
