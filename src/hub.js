@@ -56,8 +56,7 @@ function addApiCalls (hub, io, socket) {
     }
 
     socket.on('listScenes', function(callback) {
-        //console.log("listScenes");
-        //console.log("groupID: " + socket.groupID);
+        console.log("listScenes groupID: " + socket.groupID);
         //AJF: if the groupID is 0 (admin) then list all scenes
         if(socket.groupID == 0)
             hub.db.mediaScenes.find({'$query': {}, '$orderby': {name: 1}}, {name: 1}, callback);
@@ -170,11 +169,11 @@ Hub.prototype.listen = function(callback) {
         socket.on('auth', function (creds, callback) {
  
             function succeed (record) {
-                //AJF: set the groupID on the socket to be used in further calls
+                //AJF: set the groupID on the socket to be used in further local calls
                 socket.groupID = record._groupID;
                 addApiCalls(self, io, socket);
                 clearTimeout(disconnectTimer);
-                callback(null, record._id.toString(), socket.id);
+                callback(null, record._id.toString(), socket.id, record._groupID.toString());//AJF: try to return the groupID...
             }
 
             function fail (msg) {
