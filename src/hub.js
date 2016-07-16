@@ -71,12 +71,12 @@ function addApiCalls (hub, io, socket) {
     }
 
     socket.on('listScenes', function(callback) {
-<<<<<<< HEAD
+
         console.log("listScenes groupID: " + socket.groupID);
-=======
+
         //console.log("listScenes");
         //console.log("groupID: " + socket.groupID);
->>>>>>> 8991a4e77945f1cf83f6a7e6043731c4202475c9
+
         //AJF: if the groupID is 0 (admin) then list all scenes
         if(socket.groupID == 0)
             hub.db.mediaScenes.find({'$query': {}, '$orderby': {name: 1}}, {name: 1}, callback);
@@ -84,13 +84,12 @@ function addApiCalls (hub, io, socket) {
         {
             hub.db.mediaScenes.find({'$query': {_groupID: socket.groupID}, '$orderby': {name: 1}}, {name: 1}, callback);
         }
-<<<<<<< HEAD
-=======
+
     });
 
     socket.on('listSceneGraphs', function(callback) {
         hub.db.mediaSceneGraphs.find({'$query': {}}, callback);
->>>>>>> 8991a4e77945f1cf83f6a7e6043731c4202475c9
+
     });
     
     socket.on('saveScene', function(sceneData, callback) {
@@ -219,11 +218,11 @@ Hub.prototype.listen = function(callback) {
         socket.on('auth', function (creds, callback) {
  
             function succeed (record) {
-<<<<<<< HEAD
+
                 //AJF: set the groupID on the socket to be used in further local calls
-=======
+
                 //AJF: set the groupID on the socket to be used in further calls
->>>>>>> 8991a4e77945f1cf83f6a7e6043731c4202475c9
+
                 socket.groupID = record._groupID;
                 addApiCalls(self, io, socket);
                 clearTimeout(disconnectTimer);
