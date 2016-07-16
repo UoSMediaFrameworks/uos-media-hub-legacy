@@ -46,6 +46,17 @@ function validateScene (sceneData) {
     return sceneData;
 }
 
+function validateSceneGraph (sceneGraphData) {
+    //convert _id so mongo recognizes it
+    if (sceneGraphData.hasOwnProperty('_id')) {
+        sceneGraphData._id = mongo.ObjectId(sceneGraphData._id);
+    }
+
+    //TODO most likely more detailed validation can occur
+
+    return sceneGraphData;
+}
+
 function addApiCalls (hub, io, socket) {
     function idSearch (id) {
         return {_id: mongo.ObjectId(id)};
@@ -55,8 +66,17 @@ function addApiCalls (hub, io, socket) {
         return hub.db.mediaScenes.findOne(idSearch(sceneId), cb);
     }
 
+    function _findSceneGraph(sceneGraphId, cb) {
+        return hub.db.mediaSceneGraphs.findOne(idSearch(sceneGraphId), cb);
+    }
+
     socket.on('listScenes', function(callback) {
+<<<<<<< HEAD
         console.log("listScenes groupID: " + socket.groupID);
+=======
+        //console.log("listScenes");
+        //console.log("groupID: " + socket.groupID);
+>>>>>>> 8991a4e77945f1cf83f6a7e6043731c4202475c9
         //AJF: if the groupID is 0 (admin) then list all scenes
         if(socket.groupID == 0)
             hub.db.mediaScenes.find({'$query': {}, '$orderby': {name: 1}}, {name: 1}, callback);
@@ -64,6 +84,13 @@ function addApiCalls (hub, io, socket) {
         {
             hub.db.mediaScenes.find({'$query': {_groupID: socket.groupID}, '$orderby': {name: 1}}, {name: 1}, callback);
         }
+<<<<<<< HEAD
+=======
+    });
+
+    socket.on('listSceneGraphs', function(callback) {
+        hub.db.mediaSceneGraphs.find({'$query': {}}, callback);
+>>>>>>> 8991a4e77945f1cf83f6a7e6043731c4202475c9
     });
     
     socket.on('saveScene', function(sceneData, callback) {
@@ -90,7 +117,30 @@ function addApiCalls (hub, io, socket) {
         }
     });
 
+    socket.on('saveSceneGraph', function(sceneGraphData, callback) {
+        try {
+            var data = validateSceneGraph(sceneGraphData);
+
+            hub.db.mediaSceneGraphs.save(data, function(err, sceneGraph) {
+                io.to(sceneGraph._id.toString()).emit('sceneGraphUpdate', sceneGraph);
+
+                if (callback) {
+                    callback(err, sceneGraph);
+                }
+            });
+
+        } catch(err) {
+            if(callback) {
+                callback(err.message);
+            }
+        }
+    });
+
     socket.on('loadScene', _findScene);
+
+    socket.on('loadSceneGraph', _findSceneGraph);
+    
+    //TODO loadSceneGraphByName
 
     socket.on('loadSceneByName', function(name, callback) {
         hub.db.mediaScenes.findOne({name: name}, callback);
@@ -134,7 +184,7 @@ function addApiCalls (hub, io, socket) {
 
 var Hub = function(config) {
     this.config = config;
-    this.db = mongo.connect(config.mongo, ['mediaScenes', 'sessions']);
+    this.db = mongo.connect(config.mongo, ['mediaScenes', 'sessions', 'mediaSceneGraphs']);
     session.setClient(this.db);
 };
 
@@ -169,7 +219,11 @@ Hub.prototype.listen = function(callback) {
         socket.on('auth', function (creds, callback) {
  
             function succeed (record) {
+<<<<<<< HEAD
                 //AJF: set the groupID on the socket to be used in further local calls
+=======
+                //AJF: set the groupID on the socket to be used in further calls
+>>>>>>> 8991a4e77945f1cf83f6a7e6043731c4202475c9
                 socket.groupID = record._groupID;
                 addApiCalls(self, io, socket);
                 clearTimeout(disconnectTimer);
