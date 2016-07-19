@@ -226,7 +226,7 @@ Hub.prototype.listen = function(callback) {
                 socket.groupID = record._groupID;
                 addApiCalls(self, io, socket);
                 clearTimeout(disconnectTimer);
-                callback(null, record._id.toString(), socket.id, record._groupID.toString());//AJF: try to return the groupID...
+                callback(null, record._id.toString(), socket.id, record._groupID);//AJF: try to return the groupID...
             }
 
             function fail (msg) {
@@ -254,6 +254,14 @@ Hub.prototype.listen = function(callback) {
                     session.create(105, throwErr(succeed));
                 } else if (bcrypt.compareSync(creds.password, self.config.secret_106)) {
                     session.create(106, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_107)) {
+                    session.create(107, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_108)) {
+                    session.create(108, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_109)) {
+                    session.create(109, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_110)) {
+                    session.create(110, throwErr(succeed));
                 } else {
                     fail('Invalid Password');
                 }
