@@ -226,7 +226,7 @@ Hub.prototype.listen = function(callback) {
                 socket.groupID = record._groupID;
                 addApiCalls(self, io, socket);
                 clearTimeout(disconnectTimer);
-                callback(null, record._id.toString(), socket.id, record._groupID);//AJF: try to return the groupID...
+                callback(null, record._id.toString(), socket.id, record._groupID.toString());//AJF: try to return the groupID...
             }
 
             function fail (msg) {
