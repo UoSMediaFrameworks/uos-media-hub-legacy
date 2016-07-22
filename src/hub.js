@@ -79,10 +79,10 @@ function addApiCalls (hub, io, socket) {
 
         //AJF: if the groupID is 0 (admin) then list all scenes
         if(socket.groupID == 0)
-            hub.db.mediaScenes.find({'$query': {}, '$orderby': {name: 1}}, {name: 1}, callback);
+            hub.db.mediaScenes.find({'$query': {}, '$orderby': {name: 1}}, {name: 1, _groupID: 2}, callback);
         else
         {
-            hub.db.mediaScenes.find({'$query': {_groupID: socket.groupID}, '$orderby': {name: 1}}, {name: 1}, callback);
+            hub.db.mediaScenes.find({'$query': {_groupID: socket.groupID}, '$orderby': {name: 1}}, {name: 1, _groupID: 2}, callback);
         }
 
     });
