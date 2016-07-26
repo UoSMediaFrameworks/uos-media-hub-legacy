@@ -146,11 +146,11 @@ function addApiCalls (hub, io, socket) {
     });
 
     socket.on('deleteScene', function(sceneId, callback) {
-        hub.db.mediaScenes.remove(idSearch(sceneId), function(err) {
-            if (callback) {
-                callback(err);    
-            }
-        });
+        // hub.db.mediaScenes.remove(idSearch(sceneId), function(err) {
+        //     if (callback) {
+        //         callback(err);    
+        //     }
+        // });
     });
 
     socket.on('subScene', function(sceneId, callback) {
