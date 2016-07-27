@@ -191,6 +191,9 @@ function addApiCalls (hub, io, socket) {
     });
 
     socket.on('register', function(roomId) {
+
+        console.log("REGISTER TO ROOM: ", roomId);
+
         socket.join(roomId);
     });
 }
