@@ -102,8 +102,12 @@ function addApiCalls (hub, io, socket) {
             //AJF: save the groupID acquired from the socket if the groupID isn't already set
             console.log("data._groupID: " + data._groupID);
             
-            //if(!data._groupID)
+            if(!data._groupID)
+            {
+                console.log("data._groupID not set so setting to: " + data._groupID);
                 data._groupID = socket.groupID;
+            }
+                
 
             hub.db.mediaScenes.save(data, function(err, scene) {
                 io.to(scene._id.toString()).emit('sceneUpdate', scene);
