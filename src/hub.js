@@ -104,7 +104,7 @@ function addApiCalls (hub, io, socket) {
             
             if(!data._groupID)
             {
-                console.log("data._groupID not set so setting to: " + data._groupID);
+                console.log("data._groupID not set so setting to: " + socket.groupID);
                 data._groupID = socket.groupID;
             }
                 
