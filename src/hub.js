@@ -100,6 +100,8 @@ function addApiCalls (hub, io, socket) {
             var data = validateScene(sceneData);
 
             //AJF: save the groupID acquired from the socket if the groupID isn't already set
+            console.log("data._groupID: " + data._groupID);
+            
             if(!data._groupID)
                 data._groupID = socket.groupID;
 
