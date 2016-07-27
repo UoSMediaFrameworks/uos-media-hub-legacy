@@ -174,6 +174,13 @@ function addApiCalls (hub, io, socket) {
     });
 
     socket.on('sendCommand', function(roomId, commandName, commandValue) {
+
+        console.log("sendCommand: ", {
+            roomId: roomId,
+            commandName: commandName,
+            commandValue: commandValue
+        });
+
         io.to(roomId).emit('command', {name: commandName, value: commandValue});
     });
 
