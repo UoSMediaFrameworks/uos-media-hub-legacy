@@ -94,16 +94,16 @@ function addApiCalls (hub, io, socket) {
     
     socket.on('saveScene', function(sceneData, callback) {
         try {
-
-            console.log("saveScene");
+            console.log("saveScene: ", sceneData);
 
             var data = validateScene(sceneData);
+
+            console.log("saveScene after validation: ", sceneData);
 
             //AJF: save the groupID acquired from the socket if the groupID isn't already set
             console.log("data._groupID: " + data._groupID);
             
-            if(!data._groupID)
-            {
+            if(!data._groupID) {
                 console.log("data._groupID not set so setting to: " + socket.groupID);
                 data._groupID = socket.groupID;
             }
@@ -146,8 +146,6 @@ function addApiCalls (hub, io, socket) {
 
     socket.on('loadSceneGraph', _findSceneGraph);
     
-    //TODO loadSceneGraphByName
-
     socket.on('loadSceneByName', function(name, callback) {
         hub.db.mediaScenes.findOne({name: name}, callback);
     });
