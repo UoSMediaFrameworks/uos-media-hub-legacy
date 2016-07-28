@@ -94,11 +94,9 @@ function addApiCalls (hub, io, socket) {
     
     socket.on('saveScene', function(sceneData, callback) {
         try {
-            console.log("saveScene: ", sceneData);
-
             var data = validateScene(sceneData);
 
-            console.log("saveScene after validation: ", sceneData);
+            console.log("saveScene after validation: ", data);
 
             //AJF: save the groupID acquired from the socket if the groupID isn't already set
             console.log("data._groupID: " + data._groupID);
