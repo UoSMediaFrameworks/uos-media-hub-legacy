@@ -98,6 +98,11 @@ function addApiCalls (hub, io, socket) {
 
             console.log("saveScene after validation: ", data);
 
+			//AJF: sanity check to stop client side CTRL+Z bug blank scene reaching the db
+			if(data.hasOwnProperty('themes') || data.hasOwnProperty('style') || data.hasOwnProperty('scene'))
+			{
+				console.log("Valid");
+			
             //AJF: save the groupID acquired from the socket if the groupID isn't already set
             console.log("data._groupID: " + data._groupID);
             
@@ -114,6 +119,7 @@ function addApiCalls (hub, io, socket) {
                     callback(err, scene);
                 }
             });
+			}
         } catch(err) {
             if (callback) {
                 callback(err.message);
