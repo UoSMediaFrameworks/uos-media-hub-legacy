@@ -162,6 +162,14 @@ function addApiCalls (hub, io, socket) {
         // });
     });
 
+    socket.on('deleteSceneGraph', function(sceneGraphId, callback){
+        hub.db.mediaSceneGraphs.remove(idSearch(sceneGraphId), function(err){
+            if(callback) {
+                callback(err);
+            }
+        });
+    });
+
     socket.on('subScene', function(sceneId, callback) {
         _findScene(sceneId, function(err, scene) {
             socket.join(sceneId);
