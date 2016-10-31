@@ -14,6 +14,7 @@ var config = {
 		secret_108: process.env.HUB_SECRET_108,
 		secret_109: process.env.HUB_SECRET_109,
 		secret_110: process.env.HUB_SECRET_110,
+		secret_111: process.env.HUB_SECRET_111,
 		mongo: process.env.HUB_MONGO,
 		port: process.env.PORT
 };

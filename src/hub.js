@@ -289,6 +289,8 @@ Hub.prototype.listen = function(callback) {
                     session.create(109, throwErr(succeed));
                 } else if (bcrypt.compareSync(creds.password, self.config.secret_110)) {
                     session.create(110, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_111)) {
+                    session.create(111, throwErr(succeed));
                 } else {
                     fail('Invalid Password');
                 }
