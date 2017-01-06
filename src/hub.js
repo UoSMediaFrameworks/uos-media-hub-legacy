@@ -14,6 +14,10 @@ var cors = require('cors');
 
 var _validTokens = {};
 
+function getDateForLog() {
+    return new Date();
+}
+
 function throwErr (func) {
     return function(err, data) {
         if (err) {
@@ -63,19 +67,22 @@ function addApiCalls (hub, io, socket) {
     }
 
     function _findScene (sceneId, cb) {
+
+        console.log(getDateForLog() + " - hub.js - _findScene");
+
         return hub.db.mediaScenes.findOne(idSearch(sceneId), cb);
     }
 
     function _findSceneGraph(sceneGraphId, cb) {
+
+        console.log(getDateForLog() + " - hub.js - _findSceneGraph");
+
         return hub.db.mediaSceneGraphs.findOne(idSearch(sceneGraphId), cb);
     }
 
     socket.on('listScenes', function(callback) {
 
-        console.log("listScenes groupID: " + socket.groupID);
-
-        //console.log("listScenes");
-        //console.log("groupID: " + socket.groupID);
+        console.log(getDateForLog() + " - hub.js - listScenes groupID: " + socket.groupID);
 
         //AJF: if the groupID is 0 (admin) then list all scenes
         if(socket.groupID == 0)
@@ -88,15 +95,18 @@ function addApiCalls (hub, io, socket) {
     });
 
     socket.on('listSceneGraphs', function(callback) {
+        console.log(getDateForLog() + " - hub.js - listSceneGraphs");
         hub.db.mediaSceneGraphs.find({'$query': {}}, callback);
 
     });
     
     socket.on('saveScene', function(sceneData, callback) {
+        console.log(getDateForLog() + " - hub.js - listSceneGraphs");
+
         try {
             var data = validateScene(sceneData);
 
-            console.log("saveScene after validation: ", data);
+            console.log(getDateForLog() + " - hub.js - saveScene after validation: ", data);
 
 			//AJF: sanity check to stop client side CTRL+Z bug blank scene reaching the db
 			if(data.hasOwnProperty('themes') || data.hasOwnProperty('style') || data.hasOwnProperty('scene'))
@@ -104,10 +114,10 @@ function addApiCalls (hub, io, socket) {
 				console.log("Valid");
 			
             //AJF: save the groupID acquired from the socket if the groupID isn't already set
-            console.log("data._groupID: " + data._groupID);
+            console.log(getDateForLog() + " - hub.js - saveScene data._groupID: " + data._groupID);
             
             if(!data._groupID) {
-                console.log("data._groupID not set so setting to: " + socket.groupID);
+                console.log(getDateForLog() + " - hub.js - saveScene data._groupID not set so setting to: " + socket.groupID);
                 data._groupID = socket.groupID;
             }
                 
@@ -129,6 +139,8 @@ function addApiCalls (hub, io, socket) {
 
     socket.on('saveSceneGraph', function(sceneGraphData, callback) {
         try {
+            console.log(getDateForLog() + " - hub.js - saveSceneGraph");
+
             var data = validateSceneGraph(sceneGraphData);
 
             hub.db.mediaSceneGraphs.save(data, function(err, sceneGraph) {
@@ -151,10 +163,16 @@ function addApiCalls (hub, io, socket) {
     socket.on('loadSceneGraph', _findSceneGraph);
     
     socket.on('loadSceneByName', function(name, callback) {
+
+        console.log(getDateForLog() + " - hub.js - loadSceneByName");
+
         hub.db.mediaScenes.findOne({name: name}, callback);
     });
 
     socket.on('deleteScene', function(sceneId, callback) {
+
+        console.log(getDateForLog() + " - hub.js - deleteScene");
+
         hub.db.mediaScenes.remove(idSearch(sceneId), function(err) {
             if (callback) {
                 callback(err);    
@@ -163,6 +181,9 @@ function addApiCalls (hub, io, socket) {
     });
 
     socket.on('deleteSceneGraph', function(sceneGraphId, callback){
+
+        console.log(getDateForLog() + " - hub.js - deleteSceneGraph");
+
         hub.db.mediaSceneGraphs.remove(idSearch(sceneGraphId), function(err){
             if(callback) {
                 callback(err);
@@ -171,6 +192,9 @@ function addApiCalls (hub, io, socket) {
     });
 
     socket.on('subScene', function(sceneId, callback) {
+
+        console.log(getDateForLog() + " - hub.js - subScene");
+
         _findScene(sceneId, function(err, scene) {
             socket.join(sceneId);
             
@@ -181,6 +205,9 @@ function addApiCalls (hub, io, socket) {
     });
 
     socket.on('unsubScene', function(sceneId, callback) {
+
+        console.log(getDateForLog() + " - hub.js - unsubScene");
+
         _findScene(sceneId, function(err, scene) {
             socket.leave(sceneId); 
             if (callback) {
@@ -191,7 +218,8 @@ function addApiCalls (hub, io, socket) {
 
     socket.on('sendCommand', function(roomId, commandName, commandValue) {
 
-        console.log("sendCommand: ", {
+
+        console.log(getDateForLog() + " - hub.js - sendCommand: ", {
             roomId: roomId,
             commandName: commandName,
             commandValue: commandValue
@@ -202,7 +230,7 @@ function addApiCalls (hub, io, socket) {
 
     socket.on('register', function(roomId) {
 
-        console.log("REGISTER TO ROOM: ", roomId);
+        console.log(getDateForLog() + " - hub.js - REGISTER TO ROOM: ", roomId);
 
         socket.join(roomId);
     });
