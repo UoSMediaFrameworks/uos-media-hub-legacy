@@ -230,6 +230,8 @@ function addApiCalls (hub, io, socket) {
 
     socket.on('register', function(roomId) {
 
+        roomId = roomId.replace("/#", "");
+
         console.log(getDateForLog() + " - hub.js - REGISTER TO ROOM: ", roomId);
 
         socket.join(roomId);
