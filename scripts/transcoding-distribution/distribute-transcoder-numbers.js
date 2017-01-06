@@ -22,14 +22,20 @@ var bucketCache = {
     "bucket8": 0
 };
 
+// var getTranscoderNumberFromBucketId = function(bID) {
+//     var bucketId = bID.replace('bucket', '');
+//
+//     if(bucketId > 0 && bucketId < 5) { //1 - 3
+//         return 1;
+//     } else if (bucketId > 4 && bucketId < 9) { // 6-8
+//         return 4;
+//     }
+// };
+
 var getTranscoderNumberFromBucketId = function(bID) {
     var bucketId = bID.replace('bucket', '');
-
-    if(bucketId > 0 && bucketId < 5) { //1 - 3
-        return 1;
-    } else if (bucketId > 4 && bucketId < 9) { // 6-8
-        return 4;
-    }
+    
+    return bucketId % 2 ? 1 : 4;  //evenly squish the groups, taking 2 small 2 big
 };
 
 var getTranscoderNumber = function(fileSize) {
@@ -62,7 +68,9 @@ var getTranscoderNumber = function(fileSize) {
 
 var applyChangeToDB = true;
 
-db.videomediaobjects.find({ hasTranscoded: false }, function(err, vmobs){
+// hasTranscoded: false
+
+db.videomediaobjects.find({ hasTranscoded: false, transcoder: { $in: [1, 4]} }, function(err, vmobs){
     
     
     _.forEach(vmobs, function(vmob){

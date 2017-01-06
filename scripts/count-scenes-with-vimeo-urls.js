@@ -25,7 +25,21 @@ db.mediaScenes.find({}, function(err, scenes) {
         
         if(videoMedia.length > 0) {
             scenesWithAtleastOneVimeo++;
+
+            var message = "scene: " + JSON.stringify({
+                    sceneName: scene.name,
+                    sceneID: scene._id,
+                });
+
+
+            _.forEach(videoMedia, function(vmob){
+                message += " : " + vmob.url
+            });
+
+            console.log("MESSAGE: ", message);
         }
+        
+        
 
          sceneUrlsWithVimeoIn += videoMedia.length;
     });
