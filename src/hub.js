@@ -11,6 +11,7 @@ var util = require('util');
 var session = require('./session');
 var _ = require('lodash');
 var cors = require('cors');
+var shortid = require('shortid');
 
 var _validTokens = {};
 
@@ -283,7 +284,7 @@ Hub.prototype.listen = function(callback) {
                 socket.groupID = record._groupID;
                 addApiCalls(self, io, socket);
                 clearTimeout(disconnectTimer);
-                var roomId = "TEST123";
+                var roomId = shortid.generate(); // APEP: generate a user friendly shortid for roomID for graph and player to communicate
                 callback(null, record._id.toString(), roomId, record._groupID.toString());//AJF: try to return the groupID...
             }
 
