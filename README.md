@@ -17,6 +17,7 @@ cp env-example.sh env.sh
 
 Here's what they do:
 * `HUB_SECRET` - A password hash done with bcrypt.  Compute your bcrypt has and set this to whatever you'd like.  The env-example.sh contains the bcrypt hash for 'kittens'.
+* `HUB_SECRET_*` - Include all password options
 * `HUB_MONGO` - Mongo connection string to the mongo database.
 * `PORT` - Port that the application should listen on.
 
@@ -34,7 +35,7 @@ Start up the server like so
 
 ## Deployment
 
-Follow all of the development steps.  However, depending on your hosting envirorment, it may make more sense to configure the environment variable through their UI.
+Follow all of the development steps.  However, depending on your hosting environment, it may make more sense to configure the environment variable through their UI.
 
 ## API
 
