@@ -29,13 +29,11 @@ function processScene() {
         var videos = [];
 
         _.forEach(scene.scene, function(mo){
-            if(mo.url.indexOf(BLOB_STORAGE_HOST) !== -1) {
-
-                if(mo.type === "video") {
-                    videos.push(mo);
-                } else if(mo.type === "image") {
-                    images.push(mo);
-                }
+            if(mo.type === "video" && mo.url.indexOf(BLOB_STORAGE_HOST) !== -1) {
+                videos.push(mo);
+                
+            } else if(mo.type === "image" && mo.url.indexOf(BLOB_STORAGE_HOST) !== -1) {
+                images.push(mo);
             }
         });
 
