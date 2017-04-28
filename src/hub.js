@@ -275,7 +275,7 @@ Hub.prototype.listen = function(callback) {
 
         socket.on('auth', function (creds, callback) {
  
-            function succeed (record, cb) {
+            function succeed (record) {
 
                 //AJF: set the groupID on the socket to be used in further local calls
 
@@ -285,8 +285,7 @@ Hub.prototype.listen = function(callback) {
                 addApiCalls(self, io, socket);
                 clearTimeout(disconnectTimer);
                 var roomId = shortid.generate(); // APEP: generate a user friendly shortid for roomID for graph and player to communicate
-                if (cb)
-                    cb(null, record._id.toString(), roomId, record._groupID.toString());//AJF: try to return the groupID...
+                callback(null, record._id.toString(), roomId, record._groupID.toString());//AJF: try to return the groupID...
             }
 
             function fail (msg) {
@@ -336,7 +335,7 @@ Hub.prototype.listen = function(callback) {
                 console.log("Finding session via token");
                 session.find(creds.token, function(err, data) {
                         if (data) {
-                            succeed(data, callback);
+                            succeed(data);
                         } else {
                             fail('Invalid Token');
                         }
