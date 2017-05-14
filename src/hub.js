@@ -273,6 +273,87 @@ Hub.prototype.listen = function(callback) {
             socket.disconnect();
         }, 10000);
 
+        socket.on('a-auth', function (creds, args, callback) {
+
+            console.log("a-auth - args: ", args);
+            console.log("a-auth - callback: ", callback);
+ 
+            function succeed (record) {
+
+                //AJF: set the groupID on the socket to be used in further local calls
+
+                //AJF: set the groupID on the socket to be used in further calls
+
+                socket.groupID = record._groupID;
+                addApiCalls(self, io, socket);
+                clearTimeout(disconnectTimer);
+                var roomId = shortid.generate(); // APEP: generate a user friendly shortid for roomID for graph and player to communicate
+
+                console.log("auth - suceed - callback:", callback);
+                // APEP logging and test if callback exists - used due to error in android platform
+                if(callback)
+                    callback(null, record._id.toString(), roomId, record._groupID.toString());//AJF: try to return the groupID...
+            }
+
+            function fail (msg) {
+                callback(msg);
+                socket.disconnect();
+            }
+
+            if (creds.hasOwnProperty('password') && creds.password && creds.password !== '') {
+                //AJF: Compares the passwords and determines what group the user logging into belongs to
+                if ( bcrypt.compareSync(creds.password, self.config.secret) ) {
+                    session.create(0, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_1)) {
+                    session.create(1, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_2)) {
+                    session.create(2, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_101)) {
+                    session.create(101, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_102)) {
+                    session.create(102, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_103)) {
+                    session.create(103, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_104)) {
+                    session.create(104, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_105)) {
+                    session.create(105, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_106)) {
+                    session.create(106, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_107)) {
+                    session.create(107, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_108)) {
+                    session.create(108, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_109)) {
+                    session.create(109, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_110)) {
+                    session.create(110, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_111)) {
+                    session.create(111, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_112)) {
+                    session.create(112, throwErr(succeed));
+                } else if (bcrypt.compareSync(creds.password, self.config.secret_113)) {
+                    session.create(113, throwErr(succeed));
+                } else {
+                    fail('Invalid Password');
+                }
+
+            } else if (creds.hasOwnProperty('token') && creds.token && creds.token !== '') {
+                console.log("Finding session via token");
+                session.find(creds.token, function(err, data) {
+                        if (data) {
+                            succeed(data);
+                        } else {
+                            fail('Invalid Token');
+                        }
+                    });
+            } else {
+                fail('Password must be provided');
+            }  
+        });
+        
+    })
+
         socket.on('auth', function (creds, callback) {
  
             function succeed (record) {
