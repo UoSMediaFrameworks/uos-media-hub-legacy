@@ -352,8 +352,6 @@ Hub.prototype.listen = function(callback) {
             }  
         });
         
-    })
-
         socket.on('auth', function (creds, callback) {
  
             function succeed (record) {
