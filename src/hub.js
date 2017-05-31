@@ -285,8 +285,7 @@ Hub.prototype.listen = function(callback) {
                 addApiCalls(self, io, socket);
                 clearTimeout(disconnectTimer);
                 var roomId = shortid.generate(); // APEP: generate a user friendly shortid for roomID for graph and player to communicate
-
-                console.log("auth - suceed - callback:", callback);
+                console.log("auth - suceed - calling back:");
                 // APEP logging and test if callback exists - used due to error in android platform
                 if(callback)
                     callback(null, record._id.toString(), roomId, record._groupID.toString());//AJF: try to return the groupID...
