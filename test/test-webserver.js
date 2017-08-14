@@ -93,7 +93,25 @@ describe('Hub', function () {
                             assert.equal(token, secondToken);
                             done();
                         });
-                        
+                    });
+                });
+            });
+        });
+
+        //APEP: Allow an admin socket to request a new session for a new client its responsible for
+        //APEP: In this case this would be a controller.
+        describe('"authProvider"', function() {
+            it('should provide valid token for authentication', function(done) {
+                var self = this;
+                this.socket.emit('auth', {password: 'kittens'}, function(err, t) {
+                    self.socket.emit('authProvider', {password: 'kittens'}, function(err, token) {
+                        var sock2 = io(hubUrl, socketOps);
+                        sock2.on('connect', function() {
+                            sock2.emit('auth', {token: token}, function(err, secondToken) {
+                                assert.equal(token, secondToken);
+                                done();
+                            });
+                        });
                     });
                 });
             });
@@ -198,7 +216,7 @@ describe('Hub', function () {
             describe('"loadScene", sceneId, callback(err, scene)', function () {
                 it('should resolve callback with a scene', function(done) {
                     var self = this;
-                    this.socket.emit('saveScene', {name: 'aosenhtua', heu: 3}, function(err, savedScene) {
+                    this.socket.emit('saveScene', {name: 'aosenhtua', heu: 3, scene:[]}, function(err, savedScene) {
                         self.socket.emit('loadScene', savedScene._id, function(err, loadedScene) {
                             assert.deepEqual(savedScene, loadedScene);
                             done();
@@ -212,13 +230,13 @@ describe('Hub', function () {
                     var self = this;
                     async.parallel([
                         function(cb) {
-                            self.socket.emit('saveScene', {name: 'a'}, cb);
+                            self.socket.emit('saveScene', {name: 'a', scene:[]}, cb);
                         },
                         function(cb) {
-                            self.socket.emit('saveScene', {name: 'b'}, cb);
+                            self.socket.emit('saveScene', {name: 'b', scene:[]}, cb);
                         },
                         function(cb) {
-                            self.socket.emit('saveScene', {name: 'c'}, cb);
+                            self.socket.emit('saveScene', {name: 'c', scene:[]}, cb);
                         }
                     ], function(err, results) {
                         self.socket.emit('listScenes', function(err, sceneList) {
@@ -234,13 +252,13 @@ describe('Hub', function () {
 
                 it('should only include name and _id properties', function () {
                     var keys = _.uniq(_.flatten(_.map(this.sceneList, function(s) { return _.keys(s); })));
-                    assert.deepEqual(_.sortBy(keys), _.sortBy(['name', '_id']));
+                    assert.deepEqual(_.sortBy(keys), _.sortBy(['name', '_id', "_groupID"]));
                 });
             });
 
             describe('"subScene", sceneId, callback(err, scene)', function () {
                 beforeEach(function (done) {
-                    this.socket.emit('saveScene', {name: 'a'}, function(err, scene) {
+                    this.socket.emit('saveScene', {name: 'a', scene:[]}, function(err, scene) {
                         this.scene = scene;
                         done();
                     }.bind(this));
@@ -276,7 +294,7 @@ describe('Hub', function () {
             describe('"deleteScene", sceneId, callback(err)', function () {
                 it('should delete a scene', function (done) {
                     var self = this;
-                    self.socket.emit('saveScene', {name: 'a'}, function(err, scene) {
+                    self.socket.emit('saveScene', {name: 'a', scene: []}, function(err, scene) {
                         self.socket.emit('deleteScene', scene._id, function(err) {
                              self.socket.emit('loadScene', scene._id, function(err, newScene) {
                                 assert(! newScene);
@@ -289,7 +307,7 @@ describe('Hub', function () {
 
             describe('"unsubScene", sceneId, callback(err)', function () {
                 beforeEach(function (done) {
-                    this.socket.emit('saveScene', {name: 'a'}, function(err, scene) {
+                    this.socket.emit('saveScene', {name: 'a', scene: []}, function(err, scene) {
                         this.scene = scene;
                         done();
                     }.bind(this));
