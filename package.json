@@ -36,5 +36,10 @@
     "supertest": "^0.15.0",
     "util-extend": "^1.0.1"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "download-file": "^0.1.5",
+    "ffprobe": "^1.1.0",
+    "ffprobe-static": "^2.0.0",
+    "node-ffprobe": "^1.2.2"
+  }
 }
