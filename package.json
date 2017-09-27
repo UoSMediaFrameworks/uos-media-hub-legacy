@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/Colum-SMA-Dev/MediaHub",
   "dependencies": {
-    "async": "^0.9.0",
+    "async": "^2.5.0",
     "bcrypt-nodejs": "0.0.3",
     "cors": "^2.5.3",
     "express": "^4.10.1",
@@ -36,5 +36,10 @@
     "supertest": "^0.15.0",
     "util-extend": "^1.0.1"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "node-dir": "^0.1.17",
+    "recursive-readdir": "^2.2.1",
+    "request": "^2.82.0",
+    "sha1": "^1.1.1"
+  }
 }
