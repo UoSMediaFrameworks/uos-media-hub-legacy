@@ -3,3 +3,5 @@
 /env.sh
 /scripts/env.sh
 /scripts/old-data/**
+/latest-dump/
+/scripts/transfer-mongodb-data/dump-restore-live-to-local-env.sh
