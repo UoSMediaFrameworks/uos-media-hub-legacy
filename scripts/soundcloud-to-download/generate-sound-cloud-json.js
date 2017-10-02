@@ -85,7 +85,9 @@ db.mediaScenes.find({"_groupID": { "$in": gdcGroups}}, function(err, scenes) {
                 cb();
             });
         }
-    ], function(err, results){
+    ], function(err, results) {
+
+        return;
 
         var tasks = [];
 

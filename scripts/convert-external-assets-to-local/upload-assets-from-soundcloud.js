@@ -64,7 +64,10 @@ function uploadMediaAsset(assetResource, callback) {
             url: assetStoreUrlAndPort + assetStoreUploadAPI,
             formData: formData
         }, function(err, http, body){
-            callback(err, body, assetResource);
+            callback(err, {
+                assetStoreResult: body,
+                assetResource: assetResource
+            });
         });
     });
 }
@@ -79,7 +82,11 @@ function replaceSceneAssetUrlsForNewlyConvertedMediaAsset(assetResource, assetSt
         url: assetStoreUrlAndPort + assetStoreSwitchURLAPI,
         formData: formData
     }, function(err, http, body) {
-        callback(err, body, assetResource);
+        callback(err, {
+            statusCode: http.statusCode,
+            body: body,
+            assetResource: assetResource
+        });
     });
 }
 
@@ -100,7 +107,7 @@ async.parallelLimit(tasks, 3, function(err, results) {
     var resultsToSkip = _.filter(results, function(result) {
         return result.type === 'Error' || result.type === 'Skip';
     });
-    // console.log("resultsToSkip: ", resultsToSkip);
+    console.log("resultsToSkip: ", resultsToSkip);
 
     var validResults = _.filter(results, function(result) {
         return result.type === 'Valid';
@@ -108,9 +115,7 @@ async.parallelLimit(tasks, 3, function(err, results) {
     // console.log("validResults: ", validResults);
 
     var uploadValidAssetTasks = [];
-    // var validAssetsToUploadForSwitch = [validResults[0], validResults[1]]; // APEP for development, this should be switched for the full list of valid results
-    var validAssetsToUploadForSwitch = [validResults[0]]; // APEP for development, this should be switched for the full list of valid results
-    _.forEach(validAssetsToUploadForSwitch, function(mediaAssetResource){
+    _.forEach(validResults, function(mediaAssetResource){
         uploadValidAssetTasks.push(uploadMediaAsset.bind(null, mediaAssetResource));
     });
 
@@ -122,27 +127,37 @@ async.parallelLimit(tasks, 3, function(err, results) {
         // APEP TODO for each successful upload, we need to switch the URLS and ensure occurances match.
         var switchSceneJsonUrlTasks = [];
         _.forEach(results, function(result) {
-            var assetStoreResult = result[0];
-            var assetResource = result[1];
+            var assetStoreResult = result.assetStoreResult;
+            var assetResource = result.assetResource;
             switchSceneJsonUrlTasks.push(replaceSceneAssetUrlsForNewlyConvertedMediaAsset.bind(null, assetResource, assetStoreResult));
         });
 
         async.parallelLimit(switchSceneJsonUrlTasks, 1, function(err, switchUrlResults) {
 
             _.forEach(switchUrlResults, function(switchUrlResult) {
-                var assetStoreUrlSwitchResult = JSON.parse(switchUrlResult[0]); // APEP Here we have nModified by DB
-                var assetResource = switchUrlResult[1]; // APEP Here we have occurence from script
-                var matching = assetStoreUrlSwitchResult.nModified === assetResource.assetOccurrencesCount;
 
-                // APEP TODO we should probably build up an output file so we have a record of fail cases.
-                // Given a correct database import I expect none.
+                if(switchUrlResult.statusCode !== 200) {
+                    console.log("FAILED REQUEST TO ASSET STORE");
+                    console.log(switchUrlResult.assetResource);
+                    console.log(switchUrlResult.body);
+                } else {
+                    var assetStoreUrlSwitchResult = JSON.parse(switchUrlResult.body); // APEP Here we have nModified by DB
 
-                if(!matching) {
-                    console.log(`MISMATCH 
+                    var assetResource = switchUrlResult.assetResource; // APEP Here we have occurence from script
+
+                    var matching = assetStoreUrlSwitchResult.nModified === assetResource.assetOccurrencesCount;
+
+                    // APEP TODO we should probably build up an output file so we have a record of fail cases.
+                    // Given a correct database import I expect none.
+
+                    if(!matching) {
+                        console.log(`MISMATCH 
                         nModified ${assetStoreUrlSwitchResult.nModified}
                         assetResource.assetOccurrencesCount ${assetResource.assetOccurrencesCount}
                         assetResource ${assetResource}
+                        assetResource.assetUrl ${assetResource.assetUrl}
                     `);
+                    }
                 }
             });
         });
