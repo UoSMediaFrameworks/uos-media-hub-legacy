@@ -77,7 +77,7 @@ db.mediaScenes.find({"_groupID": { "$in": gdcGroups}}, function(err, scenes) {
                         goodUrls[mob.url] = 1;
                     }
                 }
-                cb(err, true);
+                cb(null, true);
             });
         }, function(err, results) {
             callback(err, results);
