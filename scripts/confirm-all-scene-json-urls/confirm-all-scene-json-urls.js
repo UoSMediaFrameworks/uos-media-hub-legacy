@@ -31,7 +31,7 @@ db.mediaScenes.find({"_groupID": { "$in": gdcGroups}}, function(err, scenes) {
     async.every(scenes, function(scene, callback) {
 
         var allMediaAssets = _.filter(scene.scene, function(media) {
-            return media.type === "image" || media.type === "video" || media.type === "audio";
+            return (media.type === "image" || media.type === "video" || media.type === "audio") && media.url;
         });
 
         var externalMediaRemaining = _.filter(allMediaAssets, function(media){
