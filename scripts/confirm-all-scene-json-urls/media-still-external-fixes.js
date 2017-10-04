@@ -39,6 +39,7 @@ function assetStoreSwitchUrl(oldUrl, newUrl, callback){
         oldUrl: oldUrl,
         newUrl: newUrl
     };
+    console.log("assetStoreSwitchUrl - formData: ", formData);
     request.post({
         url: assetStoreUrlAndPort + assetStoreSwitchURLAPI,
         formData: formData
