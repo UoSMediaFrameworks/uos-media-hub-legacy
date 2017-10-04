@@ -1,6 +1,7 @@
 // APEP suspected schema validation save errors for images with shit IDs somewhere in Scene JSON data
 var async = require('async');
 var mongo = require('mongojs');
+var fs = require('fs');
 var config = {
     mongo: process.env.HUB_MONGO,
 };
@@ -44,6 +45,8 @@ async.everyLimit(existingMediaStillExternal, 1, function(mo, moMongoInvestigatio
     }, function(err, mongoLookupResults){
 
         if(err) throw err;
+
+        console.log(mongoLookupResults);
 
         // 2.1 Incorrect URL dump to a file TODO // expecting array of [0] err and [1] mo or null
         console.log(mongoLookupResults.externalUrlLookup);
