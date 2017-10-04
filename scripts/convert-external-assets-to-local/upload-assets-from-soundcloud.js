@@ -11,7 +11,7 @@ var request = require('request');
 const soundcloudRecords = require('../soundcloud-to-download/scene_soundcloud_records_duplicates.json');
 const downloadsDirectory = "./scripts/soundcloud-downloads/";
 
-const assetStoreUrlAndPort = "http://localhost:4000";
+const assetStoreUrlAndPort = "http://mediaframework:4000";
 const assetStoreUploadAPI = "/upload/media";
 const assetStoreSwitchURLAPI = "/upload/convert";
 

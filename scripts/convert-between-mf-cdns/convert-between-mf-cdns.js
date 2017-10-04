@@ -16,9 +16,9 @@ var config = {
 var db = mongo(config.mongo, ['imagemediaobjects', 'audiomediaobjects', 'videomediaobjects']);
 
 const OLD_CDN_BASE_URL = "https://uosassetstore.blob.core.windows.net/assetstoredev/";
-const NEW_CDN_BASE_URL = "http://localhost:8090/";
+const NEW_CDN_BASE_URL = "http://mediaframework:8090/";
 
-const assetStoreUrlAndPort = "http://localhost:4000";
+const assetStoreUrlAndPort = "http://mediaframework:4000";
 const assetStoreUploadAPI = "/upload/media";
 const assetStoreSwitchURLAPI = "/upload/convert";
 

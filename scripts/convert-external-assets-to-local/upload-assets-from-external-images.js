@@ -9,9 +9,9 @@ var request = require('request');
 
 // APEP Here we have every single unique** soundcloud URL along with it's count of occurrences across the scenes it has been included in.
 const externalImageRecords = require('../external-images-to-download/scene_external_images_records_duplicates.json');
-const downloadsDirectory = "../scripts/external-images-downloads/";
+const downloadsDirectory = "./scripts/external-images-downloads/";
 
-const assetStoreUrlAndPort = "http://localhost:4000";
+const assetStoreUrlAndPort = "http://mediaframework:4000";
 const assetStoreUploadAPI = "/upload/media";
 const assetStoreSwitchURLAPI = "/upload/convert";
 

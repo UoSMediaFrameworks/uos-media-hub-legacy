@@ -5,3 +5,4 @@
 /scripts/old-data/**
 /latest-dump/
 /scripts/transfer-mongodb-data/dump-restore-live-to-local-env.sh
+/scripts/transfer-mongodb-data/dump-restore-live-to-standalone.sh
