@@ -19,7 +19,6 @@ const OLD_CDN_BASE_URL = "https://uosassetstore.blob.core.windows.net/assetstore
 const NEW_CDN_BASE_URL = "http://mediaframework:8090/";
 
 const assetStoreUrlAndPort = "http://mediaframework:4000";
-const assetStoreUploadAPI = "/upload/media";
 const assetStoreSwitchURLAPI = "/upload/convert";
 
 function moNeedsUrlSwitch(mo, type) {

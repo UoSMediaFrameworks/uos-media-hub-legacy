@@ -2,6 +2,8 @@
 var async = require('async');
 var mongo = require('mongojs');
 var fs = require('fs');
+var request = require('request');
+
 var config = {
     mongo: process.env.HUB_MONGO,
 };
@@ -26,7 +28,28 @@ function searchDatabase(mo, url, cb) {
     var fieldForQuery = mo.type + ".url";
     var findQuery = {};
     findQuery[fieldForQuery] = url;
-    db[mediaTypeToMongoCollectionTable[mo.type]].findOne(findQuery, cb);
+    db[mediaTypeToMongoCollectionTable[mo.type]].findOne(findQuery, function(mediaObject){
+        cb({mo: mo, mediaObject: mediaObject});
+    });
+}
+
+const assetStoreUrlAndPort = "http://mediaframework:4000";
+const assetStoreSwitchURLAPI = "/upload/convert";
+
+function assetStoreSwitchUrl(oldUrl, newUrl, callback){
+    var formData = {
+        oldUrl: oldUrl,
+        newUrl: newUrl
+    };
+    request.post({
+        url: assetStoreUrlAndPort + assetStoreSwitchURLAPI,
+        formData: formData
+    }, function(err, http, body) {
+        callback(err, {
+            statusCode: http.statusCode,
+            body: body,
+        });
+    });
 }
 
 var mediaObjectsThatHaveExternalUrlInCollection = [];
@@ -46,14 +69,10 @@ async.everyLimit(existingMediaStillExternal, 1, function(mo, moMongoInvestigatio
 
         if(err) throw err;
 
-        console.log(mongoLookupResults);
-
         // 2.1 Incorrect URL dump to a file TODO // expecting array of [0] err and [1] mo or null
-        console.log(mongoLookupResults.externalUrlLookup);
         mediaObjectsThatHaveExternalUrlInCollection.push(mongoLookupResults.externalUrlLookup);
 
         // 2.2 Correct URL dump to a  TODO // expecting array of [0] err and [1] mo or null
-        console.log(mongoLookupResults.internalUrlLookup);
         mediaObjectsThatHaveCorrectLocalUrlInCollection.push(mongoLookupResults.internalUrlLookup);
 
         moMongoInvestigationCallback(null, true); // APEP TODO must pass through some params here
@@ -74,15 +93,29 @@ async.everyLimit(existingMediaStillExternal, 1, function(mo, moMongoInvestigatio
             });
         }
     ], function(err, results) {
-        console.log("DONE");
-        process.exit(1);
+        // 3. For correct URL in collection but not scene JSON
+        async.everyLimit(mediaObjectsThatHaveCorrectLocalUrlInCollection, 1, function(data, switchSceneJsonUrlCb){
+            var oldUrl = data.mo.url;
+            var newUrl = data.mediaObject[data.mo.type].url;
+
+            // 4. Run the switch URL code and inspect error.
+            assetStoreSwitchUrl(oldUrl, newUrl, function(err, assetStoreResponse){
+
+                // 4.1 With error identified calculate avoidance strategy and run.
+                if(err) throw err;
+
+                console.log(assetStoreResponse.statusCode);
+                console.log(assetStoreResponse.body);
+
+                switchSceneJsonUrlCb(null, true);
+            });
+        }, function(err, results) {
+            console.log("DONE");
+            process.exit(1);
+        });
     });
 });
 
 
 
-// 3. For correct URL in collection but not scene JSON
 
-// 4. Run the switch URL code and inspect error.
-
-// 4.1 With error identified calculate avoidance strategy and run.
