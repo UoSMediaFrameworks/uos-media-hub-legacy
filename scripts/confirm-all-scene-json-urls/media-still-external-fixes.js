@@ -94,26 +94,24 @@ async.everyLimit(existingMediaStillExternal, 1, function(mo, moMongoInvestigatio
         // 3. For correct URL in collection but not scene JSON
         async.everyLimit(mediaObjectsThatHaveCorrectLocalUrlInCollection, 1, function(data, switchSceneJsonUrlCb) {
 
-            console.log(data);
-
             if(!data.mediaObject) {
-                return switchSceneJsonUrlCb(null, false);
+                switchSceneJsonUrlCb(null, false);
+            } else {
+                var oldUrl = data.mo.url;
+                var newUrl = data.mediaObject[data.mo.type].url;
+
+                // 4. Run the switch URL code and inspect error.
+                assetStoreSwitchUrl(oldUrl, newUrl, function(err, assetStoreResponse){
+
+                    // 4.1 With error identified calculate avoidance strategy and run.
+                    if(err) throw err;
+
+                    console.log(assetStoreResponse.statusCode);
+                    console.log(assetStoreResponse.body);
+
+                    switchSceneJsonUrlCb(null, true);
+                });
             }
-
-            var oldUrl = data.mo.url;
-            var newUrl = data.mediaObject[data.mo.type].url;
-
-            // 4. Run the switch URL code and inspect error.
-            assetStoreSwitchUrl(oldUrl, newUrl, function(err, assetStoreResponse){
-
-                // 4.1 With error identified calculate avoidance strategy and run.
-                if(err) throw err;
-
-                console.log(assetStoreResponse.statusCode);
-                console.log(assetStoreResponse.body);
-
-                switchSceneJsonUrlCb(null, true);
-            });
         }, function(err, results) {
             console.log("DONE");
             process.exit(1);
