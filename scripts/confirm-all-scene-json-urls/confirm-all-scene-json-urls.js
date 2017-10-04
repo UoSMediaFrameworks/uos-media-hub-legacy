@@ -34,7 +34,7 @@ db.mediaScenes.find({"_groupID": { "$in": gdcGroups}}, function(err, scenes) {
     var errorUrls = [];
     var externalMedia = [];
 
-    async.every(scenes, function(scene, callback) {
+    async.everyLimit(scenes, 2, function(scene, callback) {
 
         var allMediaAssets = _.filter(scene.scene, function(media) {
             return (media.type === "image" || media.type === "video" || media.type === "audio") && media.url;
@@ -53,7 +53,7 @@ db.mediaScenes.find({"_groupID": { "$in": gdcGroups}}, function(err, scenes) {
             return media.url.indexOf('mediaframework:8090') !== -1;
         });
 
-        async.every(internalMediaRemaining, function(mob, cb) {
+        async.everyLimit(internalMediaRemaining, 4, function(mob, cb) {
             urlExists(mob.url, function(err, exists) {
                 if(err) {
                     errorUrls.push({
