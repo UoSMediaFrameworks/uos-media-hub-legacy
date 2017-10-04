@@ -92,7 +92,12 @@ async.everyLimit(existingMediaStillExternal, 1, function(mo, moMongoInvestigatio
         }
     ], function(err, results) {
         // 3. For correct URL in collection but not scene JSON
-        async.everyLimit(mediaObjectsThatHaveCorrectLocalUrlInCollection, 1, function(data, switchSceneJsonUrlCb){
+        async.everyLimit(mediaObjectsThatHaveCorrectLocalUrlInCollection, 1, function(data, switchSceneJsonUrlCb) {
+
+            if(!data.mediaObject) {
+                return switchSceneJsonUrlCb(null, false);
+            }
+
             var oldUrl = data.mo.url;
             var newUrl = data.mediaObject[data.mo.type].url;
 
