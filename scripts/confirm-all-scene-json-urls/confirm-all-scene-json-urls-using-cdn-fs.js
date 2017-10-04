@@ -21,8 +21,15 @@ var narmGroups = [112];
 
 function mediaFileExists(url, cb) {
     var filePath = url.replace(CDN_BASE_URL, CDN_FS_BASE_DIR);
-    path.exists(filePath, function(exists){
-       cb(null, exists);
+
+    fs.stat(filePath, function(err, stat) {
+        if(!err) {
+            cb(null, true);
+        } else if(err.code === 'ENOENT') {
+            cb(null, false);
+        } else {
+            cb(err, false);
+        }
     });
 }
 
