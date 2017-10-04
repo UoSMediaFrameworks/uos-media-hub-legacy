@@ -13,8 +13,6 @@ var existingMediaStillExternal = require('./media-still-external.json');
 
 var db = mongo(config.mongo, ['mediaScenes', 'imagemediaobjects', 'audiomediaobjects', 'videomediaobjects']);
 
-
-
 const mediaTypeToMongoCollectionTable = {
     "image": "imagemediaobjects",
     "audio": "audiomediaobjects",
@@ -28,8 +26,8 @@ function searchDatabase(mo, url, cb) {
     var fieldForQuery = mo.type + ".url";
     var findQuery = {};
     findQuery[fieldForQuery] = url;
-    db[mediaTypeToMongoCollectionTable[mo.type]].findOne(findQuery, function(mediaObject){
-        cb({mo: mo, mediaObject: mediaObject});
+    db[mediaTypeToMongoCollectionTable[mo.type]].findOne(findQuery, function(err, mediaObject){
+        cb(err, {mo: mo, mediaObject: mediaObject});
     });
 }
 
