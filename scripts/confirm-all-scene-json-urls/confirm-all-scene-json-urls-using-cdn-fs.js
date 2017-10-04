@@ -98,19 +98,19 @@ db.mediaScenes.find({"_groupID": { "$in": gdcGroups}}, function(err, scenes) {
     }, function(err, results){
         async.parallel([
             function(cb) {
-                fs.writeFile('./confirm-all-scene-json-urls-using-cdn-fs/internal-media.json', JSON.stringify(goodUrls), 'utf8', function(){
+                fs.writeFile('./confirm-all-scene-json-urls/internal-media.json', JSON.stringify(goodUrls), 'utf8', function(){
                     console.log("internal-media.json file created");
                     cb();
                 });
             },
             function(cb) {
-                fs.writeFile('./confirm-all-scene-json-urls-using-cdn-fs/missing-internal-media.json', JSON.stringify(errorUrls), 'utf8', function(){
+                fs.writeFile('./confirm-all-scene-json-urls/missing-internal-media.json', JSON.stringify(errorUrls), 'utf8', function(){
                     console.log("missing-internal-media.json file created");
                     cb();
                 });
             },
             function(cb) {
-                fs.writeFile('./confirm-all-scene-json-urls-using-cdn-fs/media-still-external.json', JSON.stringify(externalMedia), 'utf8', function(){
+                fs.writeFile('./confirm-all-scene-json-urls/media-still-external.json', JSON.stringify(externalMedia), 'utf8', function(){
                     console.log("media-still-external.json file created");
                     cb();
                 });
