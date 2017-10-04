@@ -24,7 +24,6 @@ function mediaFileExists(url, cb) {
 
     fs.stat(filePath, function(err, stat) {
         if(!err) {
-            console.log("no err");
             cb(null, true);
         } else if(err.code === 'ENOENT') {
             console.log("missing");
