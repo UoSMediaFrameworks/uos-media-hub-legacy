@@ -92,11 +92,17 @@ async.everyLimit(existingMediaStillExternal, 1, function(mo, moMongoInvestigatio
             });
         }
     ], function(err, results) {
+
+        console.log(mediaObjectsThatHaveCorrectLocalUrlInCollection.length);
+
         // 3. For correct URL in collection but not scene JSON
         async.everyLimit(mediaObjectsThatHaveCorrectLocalUrlInCollection, 1, function(data, switchSceneJsonUrlCb) {
 
+            console.log(data);
+
             if(!data.mediaObject) {
-                switchSceneJsonUrlCb(null, false);
+                // APEP TODO can ignore these, as an internal URL was not found for the object
+                switchSceneJsonUrlCb(null, true);
             } else {
                 var oldUrl = data.mo.url;
                 var newUrl = data.mediaObject[data.mo.type].url;
