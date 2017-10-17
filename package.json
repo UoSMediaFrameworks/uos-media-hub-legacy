@@ -37,7 +37,11 @@
     "util-extend": "^1.0.1"
   },
   "devDependencies": {
+    "css-url-parser": "^1.1.2",
+    "get-urls": "^7.0.0",
     "node-dir": "^0.1.17",
+    "postcss": "^6.0.13",
+    "postcss-js": "^1.0.1",
     "recursive-readdir": "^2.2.1",
     "request": "^2.82.0",
     "sha1": "^1.1.1",

@@ -58,7 +58,10 @@ db.mediaScenes.find({"_groupID": { "$in": gdcGroups}}, function(err, scenes) {
 
         // APEP rather than a list of lists, lets just push the single mos
         _.forEach(externalMediaRemaining, function(mo){
-            externalMedia.push(mo);
+            externalMedia.push({
+                mo: mo,
+                sceneId: scene._id
+            });
         });
 
         var internalMediaRemaining =_.filter(allMediaAssets, function(media){
