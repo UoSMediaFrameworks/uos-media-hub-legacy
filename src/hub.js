@@ -13,8 +13,6 @@ var _ = require('lodash');
 var cors = require('cors');
 var shortid = require('shortid');
 
-var _validTokens = {};
-
 function getDateForLog() {
     return new Date();
 }
@@ -340,17 +338,6 @@ Hub.prototype.listen = function(callback) {
     this.server = server;
 
     app.use(cors());
-
-    // require a valid session token for all api calls
-    var validateSession =  function(req, res, next) {
-        session.find(req.query.token, function(err, data) {
-            if (err || ! data) {
-                res.sendStatus(401);
-            } else {
-                next();
-            }
-        });
-    };
 
     // allow cross origin requests
     io.set('origins', '*:*');
