@@ -19,22 +19,26 @@ const BLOB_STORAGE_HOST = "uosassetstore.blob.core.windows.net";
 
 var sceneId = "58d2e9a5595a37c8a76cdfe8";
 
+var gdcGroups = [ 101, 102, 103, 104, 105, 106, 107, 108, 109, 110];
+
 processScene();
 
 function processScene() {
-    db.mediaScenes.findOne({"_id": mongo.ObjectId(sceneId)}, function(err, scene){
+    // db.mediaScenes.findOne({"_id": mongo.ObjectId(sceneId)}, function(err, scene){
+    db.mediaScenes.find({"_groupID": { "$in": gdcGroups}}, function(err, scenes){
         if(err) throw err;
 
         var images = [];
         var videos = [];
 
-        _.forEach(scene.scene, function(mo){
-            if(mo.type === "video" && mo.url.indexOf(BLOB_STORAGE_HOST) !== -1) {
-                videos.push(mo);
-                
-            } else if(mo.type === "image" && mo.url.indexOf(BLOB_STORAGE_HOST) !== -1) {
-                images.push(mo);
-            }
+        _.forEach(scenes, function(scene){
+            _.forEach(scene.scene, function(mo){
+                if((mo.type === "video" && mo.url) && mo.url.indexOf(BLOB_STORAGE_HOST) !== -1) {
+                    videos.push(mo);
+                } else if((mo.type === "image" && mo.url) && mo.url.indexOf(BLOB_STORAGE_HOST) !== -1) {
+                    images.push(mo);
+                }
+            });
         });
 
         collectVideoMediaObjects(videos);
@@ -43,25 +47,24 @@ function processScene() {
 }
 
 function collectImageMediaObjects(images) {
-    var imageMediaIds = [];
-    _.forEach(images, function(imo) {
+    var imageMediaUrls = [];
 
-        console.log("mo: ", imo);
-        
-        var partUrlForImage = imo.url.replace("https://uosassetstore.blob.core.windows.net/assetstoredev/", "");
-        var urlSplit = partUrlForImage.split("/");
-        var imoId = urlSplit[0];
-        imageMediaIds.push(mongo.ObjectId(imoId));
+    console.log("images: ", images);
+
+    _.forEach(images, function(imo) {
+        imageMediaUrls.push(imo.url);
     });
 
-    collectImageMediaObjectsFromDb(imageMediaIds);
+    console.log("imageMediaUrls: ", imageMediaUrls);
+
+    collectImageMediaObjectsFromDb(imageMediaUrls);
 }
 
-function collectImageMediaObjectsFromDb(imoIds) {
-    db.imagemediaobjects.find({"_id": { "$in": imoIds}}, function(err, imos){
+function collectImageMediaObjectsFromDb(imoUrls) {
+    db.imagemediaobjects.find({"image.url": { "$in": imoUrls}}, function(err, imos){
         if(err) throw err;
 
-        console.log("imos: ", imos);
+        // console.log("imos: ", imos);
 
         fs.writeFile('media-download-for-local/image-media-objects-for-download.json', JSON.stringify(imos), 'utf8', function() {
             console.log("imos - record file created");
@@ -83,7 +86,7 @@ function collectVideoMediaObjects(videos) {
         }
     });
 
-    console.log("videoMediaIds: ", videoMediaIds);
+    // console.log("videoMediaIds: ", videoMediaIds);
 
     collectVideoMediaObjectsFromDb(videoMediaIds);
 }
@@ -92,7 +95,7 @@ function collectVideoMediaObjectsFromDb(vmoIds) {
     db.videomediaobjects.find({"_id": { "$in": vmoIds}}, function(err, vmos){
         if(err) throw err;
         
-        console.log("vmos: ", vmos);
+        // console.log("vmos: ", vmos);
 
         fs.writeFile('media-download-for-local/video-media-objects-for-download.json', JSON.stringify(vmos), 'utf8', function() {
             console.log("vmos - record file created");
