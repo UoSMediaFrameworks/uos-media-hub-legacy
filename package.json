@@ -1,6 +1,6 @@
 {
   "name": "MediaHub",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "MediaHub ========",
   "main": "src/app.js",
   "scripts": {
@@ -9,15 +9,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Colum-SMA-Dev/MediaHub.git"
+    "url": "https://github.com/UoSMediaFrameworks/uos-media-hub-legacy.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Colum-SMA-Dev/MediaHub/issues"
+    "url": "https://github.com/UoSMediaFrameworks/uos-media-hub-legacy/issues"
   },
-  "homepage": "https://github.com/Colum-SMA-Dev/MediaHub",
+  "homepage": "https://github.com/UoSMediaFrameworks/uos-media-hub-legacy",
   "dependencies": {
+    "amqplib": "^0.5.1",
     "async": "^0.9.0",
     "bcrypt-nodejs": "0.0.3",
     "cors": "^2.5.3",

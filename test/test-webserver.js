@@ -1,17 +1,12 @@
 "use strict";
 
 // try to load the config
-var config;
-try {
-    config = require('../config');
-} catch (e) {
-    config = {
-        secret: process.env.HUB_SECRET,
-        mongo: process.env.HUB_MONGO,
-        port: process.env.PORT
-    };
-}
-
+var config = {
+    secret: process.env.HUB_SECRET,
+    mongo: process.env.HUB_MONGO,
+    port: process.env.PORT,
+    amqp: "amqp://localhost"
+};
 
 var hub = require(__dirname + '/../src/hub'),
     assert = require('assert'),
@@ -24,10 +19,12 @@ var hub = require(__dirname + '/../src/hub'),
         forceNew: true
     },
     hubUrl = 'http://localhost:' + config.port,
-    request = require('supertest')(hubUrl);
+    request = require('supertest')(hubUrl),
+    amqp = require('amqplib/callback_api');
 
 describe('Hub', function () {
-    var hubApp,
+    var
+        hubApp,
         clearDatabase = function(callback) {
             hubApp.db.mediaScenes.remove({}, callback);
         };
@@ -61,6 +58,61 @@ describe('Hub', function () {
     it('should exist', function () {
         assert(hubApp);
     });
+
+    describe.only('rabbit MQ', function () {
+
+        // APEP we need to create a consumer for the tests
+        before(function(done) {
+            var self = this;
+            amqp.connect('amqp://localhost', function(err, conn) {
+                if(err) {
+                    console.log("connection to rabbit mq - err: ", err);
+
+                    throw err;
+                }
+
+                console.log("We've connected to rabbit mq as a consumer");
+
+                conn.createChannel(function(err, ch) {
+                    self.conn = conn;
+                    ch.assertQueue(hub.AMQP_WS_QUEUE, {durable: false});
+                    self.ch = ch;
+                    done();
+                });
+            });
+        });
+
+        it('should have a connection to rabbit mq', function(done) {
+            assert(hubApp.amqpConnection !== null);
+            done();
+        });
+
+        it('should have a channel connected via rabbit mq', function(done) {
+            assert(hubApp.amqpConnection !== null);
+            assert(hubApp.amqpChannel !== null);
+            done();
+        });
+
+        it('should publish messages on command when published', function(done){
+            var expectedMessage = {key: "val"};
+
+            var self = this;
+
+            this.ch.consume(hub.AMQP_WS_QUEUE, function(actualMessage) {
+
+                if (actualMessage !== null) {
+                    self.ch.ack(actualMessage);
+                }
+
+                assert.equal(JSON.stringify(expectedMessage), actualMessage.content.toString());
+                done();
+            });
+
+            hubApp.publishToControllers(new Buffer(JSON.stringify(expectedMessage)));
+        });
+    });
+
+    // APEP TODO we need to include the testing of Rabbit MQ.
 
     describe('socket API', function () {
 
@@ -100,8 +152,8 @@ describe('Hub', function () {
 
         //APEP: Allow an admin socket to request a new session for a new client its responsible for
         //APEP: In this case this would be a controller.
-        describe('"authProvider"', function() {
-            it('should provide valid token for authentication', function(done) {
+        describe('"controller using hub as authProvider"', function() {
+            it('should provide valid token for authentication using correct password', function(done) {
                 var self = this;
                 this.socket.emit('auth', {password: 'kittens'}, function(err, t) {
                     self.socket.emit('authProvider', {password: 'kittens'}, function(err, token) {
@@ -123,12 +175,9 @@ describe('Hub', function () {
                     assert(err);
                     done();
                 });
-                
             });
-
         });
 
-            
         describe('"auth", {password: <invalid password>}, callback(err, token)', function () {
            it('should invoke callback with an error message', function(done) {
                this.socket.emit('auth', {password: null}, function(err, token) {
@@ -151,7 +200,6 @@ describe('Hub', function () {
             beforeEach(function (done) {
                 this.socket.emit('auth', {password: 'kittens'}, done);
             });
-
 
             describe('"saveScene", sceneObj, callback(err, scene) with invalid scene', function () {
                 it('should resolve callback with an error', function (done) {

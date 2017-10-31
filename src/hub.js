@@ -5,13 +5,13 @@ var bcrypt = require('bcrypt-nodejs'),
     express = require('express'),
     http = require('http'),
     path = require('path'),
-    mongo = require('mongojs');
-
-var util = require('util');
-var session = require('./session');
-var _ = require('lodash');
-var cors = require('cors');
-var shortid = require('shortid');
+    mongo = require('mongojs'),
+    session = require('./session'),
+    util = require('util'),
+    _ = require('lodash'),
+    cors = require('cors'),
+    shortid = require('shortid'),
+    amqp = require('amqplib/callback_api');
 
 function getDateForLog() {
     return new Date();
@@ -173,8 +173,6 @@ function addApiCalls (hub, io, socket) {
         }
     }
 
-
-
     socket.on('listScenes', function(callback) {
         return _findSceneList(socket.groupID, callback);
     });
@@ -210,6 +208,9 @@ function addApiCalls (hub, io, socket) {
                 hub.db.mediaScenes.save(data, function(err, scene) {
                     io.to(scene._id.toString()).emit('sceneUpdate', scene);
 
+                    // APEP publish across our internal stack
+                    hub.publishToControllers(new Buffer(JSON.stringify({roomId: scene._id.toString(), name: "sceneUpdate", value: scene})));
+
                     if (callback) {
                         callback(err, scene);
                     }
@@ -230,6 +231,9 @@ function addApiCalls (hub, io, socket) {
 
             hub.db.mediaSceneGraphs.save(data, function(err, sceneGraph) {
                 io.to(sceneGraph._id.toString()).emit('sceneGraphUpdate', sceneGraph);
+
+                // APEP publish across our internal stack
+                hub.publishToControllers(new Buffer(JSON.stringify({roomId: sceneGraph._id.toString(), name: "sceneGraphUpdate", value: sceneGraph})));
 
                 if (callback) {
                     callback(err, sceneGraph);
@@ -303,7 +307,6 @@ function addApiCalls (hub, io, socket) {
 
     socket.on('sendCommand', function(roomId, commandName, commandValue) {
 
-
         console.log(getDateForLog() + " - hub.js - sendCommand: ", {
             roomId: roomId,
             commandName: commandName,
@@ -311,6 +314,9 @@ function addApiCalls (hub, io, socket) {
         });
 
         io.to(roomId).emit('command', {name: commandName, value: commandValue});
+
+        // APEP publish across our internal stack
+        hub.publishToControllers(new Buffer(JSON.stringify({roomId: roomId, name: commandName, value: commandValue})));
     });
 
     socket.on('register', function(roomId) {
@@ -341,6 +347,8 @@ Hub.prototype.listen = function(callback) {
 
     // allow cross origin requests
     io.set('origins', '*:*');
+
+    // APEP handle web socket connections
     io.sockets.on('connection', function (socket) {
 
         var disconnectTimer = setTimeout(function() {
@@ -395,10 +403,41 @@ Hub.prototype.listen = function(callback) {
                 fail('Password must be provided');
             }
         });
-        
     });
 
-    server.listen(self.config.port, callback);
+    // APEP before we list to incoming requests, we should complete our application bootstrap by connecting to the message broker
+    this.initialiseBroker(function() {
+        server.listen(self.config.port, callback);
+    });
+};
+
+var AMQP_WEBSOCK_QUEUE = 'ws';
+
+// APEP connect to the message broker for publishing output commands
+// APEP we create all the channels we will need - currently we only distribute internally to ws controllers.
+Hub.prototype.initialiseBroker = function(done) {
+    var self = this;
+    amqp.connect(self.config.amqp, function(err, conn) {
+
+        if(err) {
+            throw err;
+        }
+
+        self.amqpConnection = conn;
+        self.amqpConnection.createChannel(function(err, ch){
+            ch.assertQueue(AMQP_WEBSOCK_QUEUE, {durable: false});
+            self.amqpChannel = ch;
+            done();
+        });
+    });
+};
+
+// APEP expose the function to deliver a message over RabbitMQ.
+Hub.prototype.publishToControllers = function(message) {
+
+    console.log("publishToControllers - message to queue - ", AMQP_WEBSOCK_QUEUE);
+
+    this.amqpChannel.sendToQueue(AMQP_WEBSOCK_QUEUE, message);
 };
 
 Hub.prototype.close = function(cb) {
@@ -406,7 +445,8 @@ Hub.prototype.close = function(cb) {
 };
 
 module.exports = { 
-    createHub: function(mongoUrl) {
-        return new Hub(mongoUrl);
-    }
+    createHub: function(config) {
+        return new Hub(config);
+    },
+    AMQP_WS_QUEUE: AMQP_WEBSOCK_QUEUE
 };
