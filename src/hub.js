@@ -108,6 +108,8 @@ function checkPasswordKeyAndGetGroup (password, config) {
 function adminApiCalls(hub, io, socket, session) {
     socket.on('authProvider', function (creds, callback) {
 
+        console.log("AuthProvider - received creds: ", creds);
+
         //APEP: param record - session object from db
         function succeed (record) {
             var roomId = shortid.generate(); // APEP: generate a user friendly shortid for roomID for graph and player to communicate
