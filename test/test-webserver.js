@@ -7,6 +7,24 @@ try {
 } catch (e) {
     config = {
         secret: process.env.HUB_SECRET,
+        secret_1: process.env.HUB_SECRET_1,
+        secret_2: process.env.HUB_SECRET_2,
+        secret_101: process.env.HUB_SECRET_101,
+        secret_102: process.env.HUB_SECRET_102,
+        secret_103: process.env.HUB_SECRET_103,
+        secret_104: process.env.HUB_SECRET_104,
+        secret_105: process.env.HUB_SECRET_105,
+        secret_106: process.env.HUB_SECRET_106,
+        secret_107: process.env.HUB_SECRET_107,
+        secret_108: process.env.HUB_SECRET_108,
+        secret_109: process.env.HUB_SECRET_109,
+        secret_110: process.env.HUB_SECRET_110,
+        secret_111: process.env.HUB_SECRET_111,
+        secret_112: process.env.HUB_SECRET_112,
+        secret_113: process.env.HUB_SECRET_113,
+        secret_114: process.env.HUB_SECRET_114,
+        secret_115: process.env.HUB_SECRET_115,
+        secret_116: process.env.HUB_SECRET_116,
         mongo: process.env.HUB_MONGO,
         port: process.env.PORT
     };
@@ -75,33 +93,9 @@ describe('Hub', function () {
             this.socket.disconnect();
         });
 
-
-        describe('"auth", {password: <valid password>}, callback(err, token)', function () {
-            it('should invoke callback with a token and a room id', function(done) {
-                this.socket.emit('auth', {password: 'kittens'}, function(err, token, roomId) {
-                    assert(token);
-                    assert(roomId);
-                    done();
-                });
-            });
-
-            it('should invoke callback with a token when given same token', function (done) {
-                this.socket.emit('auth', {password: 'kittens'}, function(err, token) { 
-                    var sock2 = io(hubUrl, socketOps);
-                    sock2.on('connect', function() {
-                        sock2.emit('auth', {token: token}, function(err, secondToken) {
-                            assert.equal(token, secondToken);
-                            done();
-                        });
-                    });
-                });
-            });
-        });
-
-        //APEP: Allow an admin socket to request a new session for a new client its responsible for
-        //APEP: In this case this would be a controller.
-        describe('"authProvider"', function() {
-            it('should provide valid token for authentication', function(done) {
+        //APEP: Allow an admin socket (/controller) to request a new session for a new client its responsible for
+        describe('"authProvider", {password: <valid password>}', function() {
+            it('should provide valid password for authentication', function(done) {
                 var self = this;
                 this.socket.emit('auth', {password: 'kittens'}, function(err, t) {
                     self.socket.emit('authProvider', {password: 'kittens'}, function(err, token) {
@@ -117,21 +111,54 @@ describe('Hub', function () {
             });
         });
 
-        describe('"auth", {password: null}, callback(err, token)', function () {
+        describe('"authProvider", {password: <invalid password>', function() {
+
+            it('should provide invalid password for authentication', function(done) {
+                this.timeout(5000);
+                var self = this;
+                this.socket.emit('auth', {password: 'kittens'}, function(err, t) {
+                    self.socket.emit('authProvider', {password: 'invalid'}, function(err, token) {
+                        assert(err);
+                        done();
+                    });
+                });
+            });
+        });
+
+        describe('"auth", {password: <valid password>}, callback(err, token)', function () {
+            it('should invoke callback with a token and a room id', function(done) {
+                this.socket.emit('auth', {password: 'kittens'}, function(err, token, roomId) {
+                    assert(token);
+                    assert(roomId);
+                    done();
+                });
+            });
+
+            it('should invoke callback with a token when given same token', function (done) {
+                this.socket.emit('auth', {password: 'kittens'}, function(err, token) {
+                    var sock2 = io(hubUrl, socketOps);
+                    sock2.on('connect', function() {
+                        sock2.emit('auth', {token: token}, function(err, secondToken) {
+                            assert.equal(token, secondToken);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+
+        describe('"auth", {password: <null>}, callback(err, token)', function () {
             it('should invoke callback with an error message', function(done) {
                 this.socket.emit('auth', {password: null}, function(err, token) {
                     assert(err);
                     done();
                 });
-                
             });
-
         });
 
-            
         describe('"auth", {password: <invalid password>}, callback(err, token)', function () {
            it('should invoke callback with an error message', function(done) {
-               this.socket.emit('auth', {password: null}, function(err, token) {
+               this.socket.emit('auth', {password: "invalidpass"}, function(err, token) {
                    assert(err);
                    done();
                });

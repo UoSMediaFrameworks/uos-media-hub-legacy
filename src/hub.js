@@ -61,51 +61,59 @@ function validateSceneGraph (sceneGraphData) {
 }
 
 function checkPasswordKeyAndGetGroup (password, config) {
-    //AJF: Compares the passwords and determines what group the user logging into belongs to
-    if ( bcrypt.compareSync(password, config.secret) ) {
-        return 0;
-    } else if (bcrypt.compareSync(password, config.secret_1)) {
-        return 1;
-    } else if (bcrypt.compareSync(password, config.secret_2)) {
-        return 2;
-    } else if (bcrypt.compareSync(password, config.secret_101)) {
-        return 101;
-    } else if (bcrypt.compareSync(password, config.secret_102)) {
-        return 102;
-    } else if (bcrypt.compareSync(password, config.secret_103)) {
-        return 103;
-    } else if (bcrypt.compareSync(password, config.secret_104)) {
-        return 104;
-    } else if (bcrypt.compareSync(password, config.secret_105)) {
-        return 105;
-    } else if (bcrypt.compareSync(password, config.secret_106)) {
-        return 106;
-    } else if (bcrypt.compareSync(password, config.secret_107)) {
-        return 107;
-    } else if (bcrypt.compareSync(password, config.secret_108)) {
-        return 108;
-    } else if (bcrypt.compareSync(password, config.secret_109)) {
-        return 109;
-    } else if (bcrypt.compareSync(password, config.secret_110)) {
-        return 110;
-    } else if (bcrypt.compareSync(password, config.secret_111)) {
-        return 111;
-    } else if (bcrypt.compareSync(password, config.secret_112)) {
-        return 112;
-    } else if (bcrypt.compareSync(password, config.secret_113)) {
-        return 113;
-    } else if (bcrypt.compareSync(password, config.secret_114)) {
-        return 114;
-    } else if (bcrypt.compareSync(password, config.secret_115)) {
-        return 115;
-    } else if (bcrypt.compareSync(password, config.secret_116)) {
-        return 116;
-    } else {
+
+    try {
+        //AJF: Compares the passwords and determines what group the user logging into belongs to
+        if ( bcrypt.compareSync(password, config.secret) ) {
+            return 0;
+        } else if (bcrypt.compareSync(password, config.secret_1)) {
+            return 1;
+        } else if (bcrypt.compareSync(password, config.secret_2)) {
+            return 2;
+        } else if (bcrypt.compareSync(password, config.secret_101)) {
+            return 101;
+        } else if (bcrypt.compareSync(password, config.secret_102)) {
+            return 102;
+        } else if (bcrypt.compareSync(password, config.secret_103)) {
+            return 103;
+        } else if (bcrypt.compareSync(password, config.secret_104)) {
+            return 104;
+        } else if (bcrypt.compareSync(password, config.secret_105)) {
+            return 105;
+        } else if (bcrypt.compareSync(password, config.secret_106)) {
+            return 106;
+        } else if (bcrypt.compareSync(password, config.secret_107)) {
+            return 107;
+        } else if (bcrypt.compareSync(password, config.secret_108)) {
+            return 108;
+        } else if (bcrypt.compareSync(password, config.secret_109)) {
+            return 109;
+        } else if (bcrypt.compareSync(password, config.secret_110)) {
+            return 110;
+        } else if (bcrypt.compareSync(password, config.secret_111)) {
+            return 111;
+        } else if (bcrypt.compareSync(password, config.secret_112)) {
+            return 112;
+        } else if (bcrypt.compareSync(password, config.secret_113)) {
+            return 113;
+        } else if (bcrypt.compareSync(password, config.secret_114)) {
+            return 114;
+        } else if (bcrypt.compareSync(password, config.secret_115)) {
+            return 115;
+        } else if (bcrypt.compareSync(password, config.secret_116)) {
+            return 116;
+        }
+
+        // APEP if we haven't found a group, we must return nothing found
+        return -1;
+    } catch (e) {
+        console.log("Error trying to find group and password lookup");
         return -1;
     }
 }
 
 function adminApiCalls(hub, io, socket, session) {
+
     socket.on('authProvider', function (creds, callback) {
 
         console.log("AuthProvider - received creds: ", creds);
@@ -113,9 +121,7 @@ function adminApiCalls(hub, io, socket, session) {
         //APEP: param record - session object from db
         function succeed (record) {
             var roomId = shortid.generate(); // APEP: generate a user friendly shortid for roomID for graph and player to communicate
-            if(callback) {
-                callback(null, record._id.toString(), roomId, record._groupID.toString());
-            }
+            return callback(null, record._id.toString(), roomId, record._groupID.toString());
         }
 
         if (creds.hasOwnProperty('password') && creds.password && creds.password !== '') {
@@ -127,24 +133,24 @@ function adminApiCalls(hub, io, socket, session) {
                     if (data) {
                         succeed(data);
                     } else {
-                        callback(err);
+                        return callback(err);
                     }
                 });
             } else {
-                callback('Invalid Password');
+                console.log("AuthProvider - calling back invalid password - not found");
+                return callback('Invalid Password', null, null, null);
             }
-
         } else if (creds.hasOwnProperty('token') && creds.token && creds.token !== '') {
-            console.log("Finding session via token");
+            console.log("AuthProvider - Finding session via token");
             session.find(creds.token, function(err, data) {
                 if (data) {
                     succeed(data);
                 } else {
-                    callback('Invalid Token');
+                    return callback('Invalid Token', null, null, null);
                 }
             });
         } else {
-            callback('Password must be provided');
+            return callback('Password must be provided', null, null, null);
         }
 
     });
