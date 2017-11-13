@@ -125,6 +125,41 @@ describe('Hub', function () {
             });
         });
 
+        describe('"authProvider", {token: <valid token>', function() {
+
+            it('should provide invalid password for authentication', function(done) {
+                this.timeout(5000);
+                var self = this;
+                this.socket.emit('auth', {password: 'kittens'}, function(err, t) {
+                    assert(!err);
+                    self.socket.emit('authProvider', {password: 'kittens'}, function(err, token) {
+                        assert(!err);
+                        assert(token);
+                        self.socket.emit('authProvider', {"token": token}, function(err, token){
+                            assert(!err);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+
+        describe('"authProvider", {token: <invalid token>', function() {
+
+            it('should provide invalid password for authentication', function(done) {
+                this.timeout(5000);
+                var self = this;
+                this.socket.emit('auth', {password: 'kittens'}, function(err, t) {
+                    assert(!err);
+                    self.socket.emit('authProvider', "{\"token\": token}", function(err, token) {
+                        assert(err);
+                        console.log(err);
+                        done();
+                    });
+                });
+            });
+        });
+
         describe('"auth", {password: <valid password>}, callback(err, token)', function () {
             it('should invoke callback with a token and a room id', function(done) {
                 this.socket.emit('auth', {password: 'kittens'}, function(err, token, roomId) {
