@@ -114,7 +114,7 @@ describe('Hub', function () {
         describe('"authProvider", {password: <invalid password>', function() {
 
             it('should provide invalid password for authentication', function(done) {
-                this.timeout(5000);
+                this.timeout(7000);
                 var self = this;
                 this.socket.emit('auth', {password: 'kittens'}, function(err, t) {
                     self.socket.emit('authProvider', {password: 'invalid'}, function(err, token) {
@@ -193,6 +193,7 @@ describe('Hub', function () {
 
         describe('"auth", {password: <invalid password>}, callback(err, token)', function () {
            it('should invoke callback with an error message', function(done) {
+               this.timeout(7000);
                this.socket.emit('auth', {password: "invalidpass"}, function(err, token) {
                    assert(err);
                    done();
@@ -312,9 +313,44 @@ describe('Hub', function () {
                     assert.equal(this.sceneList.length, 3); 
                 });
 
-                it('should only include name and _id properties', function () {
+                it('should only include name, _id and _groupID properties', function () {
                     var keys = _.uniq(_.flatten(_.map(this.sceneList, function(s) { return _.keys(s); })));
                     assert.deepEqual(_.sortBy(keys), _.sortBy(['name', '_id', "_groupID"]));
+                });
+            });
+
+            describe('"listScenesForGroup", callback(err, sceneList', function() {
+
+                beforeEach(function (done) {
+                    var self = this;
+                    async.parallel([
+                        function(cb) {
+                            self.socket.emit('saveScene', {name: 'a', scene:[], _groupID: 0}, cb);
+                        },
+                        function(cb) {
+                            self.socket.emit('saveScene', {name: 'b', scene:[], _groupID: 101}, cb);
+                        },
+                        function(cb) {
+                            self.socket.emit('saveScene', {name: 'c', scene:[], _groupID: 0}, cb);
+                        }
+                    ], function(err, results) {
+                        self.socket.emit('listScenesForGroup', 0, function(err, firstSceneList) {
+                            self.adminSceneList = firstSceneList;
+
+                            self.socket.emit('listScenesForGroup', 101, function(err, secondSceneList) {
+                                self.groupSceneList = secondSceneList;
+                                done();
+                            });
+                        });
+                    });
+                });
+
+                it('should return all scenes for admin <0>', function() {
+                    assert.equal(this.adminSceneList.length, 3);
+                });
+
+                it('should return only group scenes for non admin <101>', function() {
+                    assert.equal(this.groupSceneList.length, 1);
                 });
             });
 

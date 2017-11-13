@@ -171,21 +171,23 @@ function addApiCalls (hub, io, socket) {
         return hub.db.mediaSceneGraphs.findOne(idSearch(sceneGraphId), cb);
     }
 
-    function _findSceneList(groupId, cb) {
-        console.log(getDateForLog() + " - hub.js - listScenes socket.groupID: " + socket.groupID);
+    function _findSceneList(cb) {
+        _findSceneListWithGroupId(socket.groupID, cb);
+    }
+
+    function _findSceneListWithGroupId(groupId, cb) {
+        console.log(getDateForLog() + " - hub.js - listScenes groupId: " + groupId);
         //AJF: if the groupID is 0 (admin) then list all scenes
         if(groupId === 0) {
             hub.db.mediaScenes.find({'$query': {}, '$orderby': {name: 1}}, {name: 1, _groupID: 2}, cb);
         } else {
-            hub.db.mediaScenes.find({'$query': {_groupID: socket.groupID}, '$orderby': {name: 1}}, {name: 1, _groupID: 2}, cb);
+            hub.db.mediaScenes.find({'$query': {_groupID: groupId}, '$orderby': {name: 1}}, {name: 1, _groupID: 2}, cb);
         }
     }
 
-
-
-    socket.on('listScenes', function(callback) {
-        return _findSceneList(socket.groupID, callback);
-    });
+    // APEP Support listing scenes given a groupID, this is for controllers who use this API as an admin socket.
+    // This is the reason for the additional call, an admin socket must be able to give the groupID for its client socket.
+    socket.on('listScenesForGroup', _findSceneListWithGroupId);
 
     socket.on('listScenes', _findSceneList);
 
