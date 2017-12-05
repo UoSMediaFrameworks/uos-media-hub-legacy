@@ -177,6 +177,13 @@ function addApiCalls (hub, io, socket) {
 
     function _findSceneListWithGroupId(groupId, cb) {
         console.log(getDateForLog() + " - hub.js - listScenes groupId: " + groupId);
+
+        try {
+            groupId = parseInt(groupId);
+        } catch (e) {
+            return cb(true, null);
+        }
+
         //AJF: if the groupID is 0 (admin) then list all scenes
         if(groupId === 0) {
             hub.db.mediaScenes.find({'$query': {}, '$orderby': {name: 1}}, {name: 1, _groupID: 2}, cb);
