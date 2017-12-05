@@ -339,7 +339,11 @@ describe('Hub', function () {
 
                             self.socket.emit('listScenesForGroup', 101, function(err, secondSceneList) {
                                 self.groupSceneList = secondSceneList;
-                                done();
+
+                                self.socket.emit('listScenesForGroup', "101", function(err, secondSceneList) {
+                                    self.groupSceneListUsingString = secondSceneList;
+                                    done();
+                                });
                             });
                         });
                     });
@@ -351,6 +355,11 @@ describe('Hub', function () {
 
                 it('should return only group scenes for non admin <101>', function() {
                     assert.equal(this.groupSceneList.length, 1);
+                });
+
+                it('should allow group ID to be sent as a string <"101">', function() {
+                    assert.equal(this.groupSceneListUsingString.length, 1);
+                    assert.equal(this.groupSceneList.length, this.groupSceneListUsingString.length);
                 });
             });
 
