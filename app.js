@@ -22,6 +22,7 @@ var config = {
         secret_116: process.env.HUB_SECRET_116,
         secret_117: process.env.HUB_SECRET_117,
 		secret_118: process.env.HUB_SECRET_118,
+	    secret_119:process.env.Hub_secret_119,
 		mongo: process.env.HUB_MONGO,
 		port: process.env.PORT
 };

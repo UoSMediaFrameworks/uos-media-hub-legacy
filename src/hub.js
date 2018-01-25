@@ -104,7 +104,9 @@ function checkPasswordKeyAndGetGroup (password, config) {
         return 117;
     } else if (bcrypt.compareSync(password, config.secret_118)) {
         return 118;
-    }  else {
+    } else if (bcrypt.compareSync(password,config.secret_119)){
+        return 119
+    } else {
         return -1;
     }
 }
