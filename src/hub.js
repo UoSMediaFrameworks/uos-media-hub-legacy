@@ -102,6 +102,12 @@ function checkPasswordKeyAndGetGroup (password, config) {
             return 115;
         } else if (bcrypt.compareSync(password, config.secret_116)) {
             return 116;
+        } else if (bcrypt.compareSync(password, config.secret_117)) {
+            return 117;
+        } else if (bcrypt.compareSync(password, config.secret_118)) {
+            return 118;
+        } else if (bcrypt.compareSync(password,config.secret_119)){
+            return 119;
         }
 
         // APEP if we haven't found a group, we must return nothing found
