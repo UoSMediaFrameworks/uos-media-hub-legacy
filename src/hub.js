@@ -17,17 +17,17 @@ function getDateForLog() {
     return new Date();
 }
 
-function throwErr (func) {
-    return function(err, data) {
+function throwErr(func) {
+    return function (err, data) {
         if (err) {
-            throw err;  
+            throw err;
         } else {
             func.call(null, data);
         }
     };
 }
 
-function validateScene (sceneData) {
+function validateScene(sceneData) {
     // convert _id so mongo recognizes it
     if (sceneData.hasOwnProperty('_id')) {
         sceneData._id = mongo.ObjectId(sceneData._id);
@@ -35,21 +35,21 @@ function validateScene (sceneData) {
 
     // add _ids to all mediaObjects
     if (sceneData.hasOwnProperty('scene')) {
-        if (! Array.isArray(sceneData.scene) ) {
+        if (!Array.isArray(sceneData.scene)) {
             throw new Error('"scene" property must be an array of objects');
         } else {
-            sceneData.scene.forEach(function(mediaObject) {
-                if (! mediaObject.hasOwnProperty('_id')) {
+            sceneData.scene.forEach(function (mediaObject) {
+                if (!mediaObject.hasOwnProperty('_id')) {
                     mediaObject._id = mongo.ObjectId();
                 }
-            });   
+            });
         }
     }
 
     return sceneData;
 }
 
-function validateSceneGraph (sceneGraphData) {
+function validateSceneGraph(sceneGraphData) {
     //convert _id so mongo recognizes it
     if (sceneGraphData.hasOwnProperty('_id')) {
         sceneGraphData._id = mongo.ObjectId(sceneGraphData._id);
@@ -60,11 +60,11 @@ function validateSceneGraph (sceneGraphData) {
     return sceneGraphData;
 }
 
-function checkPasswordKeyAndGetGroup (password, config) {
+function checkPasswordKeyAndGetGroup(password, config) {
 
     try {
         //AJF: Compares the passwords and determines what group the user logging into belongs to
-        if ( bcrypt.compareSync(password, config.secret) ) {
+        if (bcrypt.compareSync(password, config.secret)) {
             return 0;
         } else if (bcrypt.compareSync(password, config.secret_1)) {
             return 1;
@@ -106,7 +106,7 @@ function checkPasswordKeyAndGetGroup (password, config) {
             return 117;
         } else if (bcrypt.compareSync(password, config.secret_118)) {
             return 118;
-        } else if (bcrypt.compareSync(password,config.secret_119)){
+        } else if (bcrypt.compareSync(password, config.secret_119)) {
             return 119;
         }
 
@@ -125,7 +125,7 @@ function adminApiCalls(hub, io, socket, session) {
         console.log("AuthProvider - received creds: ", creds);
 
         //APEP: param record - session object from db
-        function succeed (record) {
+        function succeed(record) {
             var roomId = shortid.generate(); // APEP: generate a user friendly shortid for roomID for graph and player to communicate
             return callback(null, record._id.toString(), roomId, record._groupID.toString());
         }
@@ -134,8 +134,8 @@ function adminApiCalls(hub, io, socket, session) {
             //AJF: Compares the passwords and determines what group the user logging into belongs to
             var userGroup = checkPasswordKeyAndGetGroup(creds.password, hub.config);
 
-            if ( userGroup !== -1 ) {
-                session.create(userGroup, function(err, data){
+            if (userGroup !== -1) {
+                session.create(userGroup, function (err, data) {
                     if (data) {
                         succeed(data);
                     } else {
@@ -148,7 +148,7 @@ function adminApiCalls(hub, io, socket, session) {
             }
         } else if (creds.hasOwnProperty('token') && creds.token && creds.token !== '') {
             console.log("AuthProvider - Finding session via token");
-            session.find(creds.token, function(err, data) {
+            session.find(creds.token, function (err, data) {
                 if (data) {
                     succeed(data);
                 } else {
@@ -162,12 +162,12 @@ function adminApiCalls(hub, io, socket, session) {
     });
 }
 
-function addApiCalls (hub, io, socket) {
-    function idSearch (id) {
+function addApiCalls(hub, io, socket) {
+    function idSearch(id) {
         return {_id: mongo.ObjectId(id)};
     }
 
-    function _findScene (sceneId, cb) {
+    function _findScene(sceneId, cb) {
         console.log(getDateForLog() + " - hub.js - _findScene");
         return hub.db.mediaScenes.findOne(idSearch(sceneId), cb);
     }
@@ -191,7 +191,7 @@ function addApiCalls (hub, io, socket) {
         }
 
         //AJF: if the groupID is 0 (admin) then list all scenes
-        if(groupId === 0) {
+        if (groupId === 0) {
             hub.db.mediaScenes.find({'$query': {}, '$orderby': {name: 1}}, {name: 1, _groupID: 2}, cb);
         } else {
             hub.db.mediaScenes.find({'$query': {_groupID: groupId}, '$orderby': {name: 1}}, {name: 1, _groupID: 2}, cb);
@@ -204,12 +204,12 @@ function addApiCalls (hub, io, socket) {
 
     socket.on('listScenes', _findSceneList);
 
-    socket.on('listSceneGraphs', function(callback) {
+    socket.on('listSceneGraphs', function (callback) {
         console.log(getDateForLog() + " - hub.js - listSceneGraphs");
         hub.db.mediaSceneGraphs.find({'$query': {}}, callback);
     });
-    
-    socket.on('saveScene', function(sceneData, callback) {
+
+    socket.on('saveScene', function (sceneData, callback) {
         console.log(getDateForLog() + " - hub.js - listSceneGraphs");
 
         try {
@@ -217,41 +217,41 @@ function addApiCalls (hub, io, socket) {
 
             console.log(getDateForLog() + " - hub.js - saveScene after validation: ", data);
 
-			//AJF: sanity check to stop client side CTRL+Z bug blank scene reaching the db
-			if(data.hasOwnProperty('themes') || data.hasOwnProperty('style') || data.hasOwnProperty('scene')) {
-				console.log("Valid");
-			
+            //AJF: sanity check to stop client side CTRL+Z bug blank scene reaching the db
+            if (data.hasOwnProperty('themes') || data.hasOwnProperty('style') || data.hasOwnProperty('scene')) {
+                console.log("Valid");
+
                 //AJF: save the groupID acquired from the socket if the groupID isn't already set
                 console.log(getDateForLog() + " - hub.js - saveScene data._groupID: " + data._groupID);
 
-                if(!data._groupID) {
+                if (!data._groupID) {
                     console.log(getDateForLog() + " - hub.js - saveScene data._groupID not set so setting to: " + socket.groupID);
                     data._groupID = socket.groupID;
                 }
 
 
-                hub.db.mediaScenes.save(data, function(err, scene) {
+                hub.db.mediaScenes.save(data, function (err, scene) {
                     io.to(scene._id.toString()).emit('sceneUpdate', scene);
 
                     if (callback) {
                         callback(err, scene);
                     }
                 });
-			}
-        } catch(err) {
+            }
+        } catch (err) {
             if (callback) {
                 callback(err.message);
             }
         }
     });
 
-    socket.on('saveSceneGraph', function(sceneGraphData, callback) {
+    socket.on('saveSceneGraph', function (sceneGraphData, callback) {
         try {
             console.log(getDateForLog() + " - hub.js - saveSceneGraph");
 
             var data = validateSceneGraph(sceneGraphData);
 
-            hub.db.mediaSceneGraphs.save(data, function(err, sceneGraph) {
+            hub.db.mediaSceneGraphs.save(data, function (err, sceneGraph) {
                 io.to(sceneGraph._id.toString()).emit('sceneGraphUpdate', sceneGraph);
 
                 if (callback) {
@@ -259,8 +259,8 @@ function addApiCalls (hub, io, socket) {
                 }
             });
 
-        } catch(err) {
-            if(callback) {
+        } catch (err) {
+            if (callback) {
                 callback(err.message);
             }
         }
@@ -269,62 +269,62 @@ function addApiCalls (hub, io, socket) {
     socket.on('loadScene', _findScene);
 
     socket.on('loadSceneGraph', _findSceneGraph);
-    
-    socket.on('loadSceneByName', function(name, callback) {
+
+    socket.on('loadSceneByName', function (name, callback) {
 
         console.log(getDateForLog() + " - hub.js - loadSceneByName");
 
         hub.db.mediaScenes.findOne({name: name}, callback);
     });
 
-    socket.on('deleteScene', function(sceneId, callback) {
+    socket.on('deleteScene', function (sceneId, callback) {
 
         console.log(getDateForLog() + " - hub.js - deleteScene");
 
-        hub.db.mediaScenes.remove(idSearch(sceneId), function(err) {
+        hub.db.mediaScenes.remove(idSearch(sceneId), function (err) {
             if (callback) {
-                callback(err);    
+                callback(err);
             }
         });
     });
 
-    socket.on('deleteSceneGraph', function(sceneGraphId, callback){
+    socket.on('deleteSceneGraph', function (sceneGraphId, callback) {
 
         console.log(getDateForLog() + " - hub.js - deleteSceneGraph");
 
-        hub.db.mediaSceneGraphs.remove(idSearch(sceneGraphId), function(err){
-            if(callback) {
+        hub.db.mediaSceneGraphs.remove(idSearch(sceneGraphId), function (err) {
+            if (callback) {
                 callback(err);
             }
         });
     });
 
-    socket.on('subScene', function(sceneId, callback) {
+    socket.on('subScene', function (sceneId, callback) {
 
         console.log(getDateForLog() + " - hub.js - subScene");
 
-        _findScene(sceneId, function(err, scene) {
+        _findScene(sceneId, function (err, scene) {
             socket.join(sceneId);
-            
+
             if (callback) {
-                callback(err, scene);    
-            } 
+                callback(err, scene);
+            }
         });
     });
 
-    socket.on('unsubScene', function(sceneId, callback) {
+    socket.on('unsubScene', function (sceneId, callback) {
 
         console.log(getDateForLog() + " - hub.js - unsubScene");
 
-        _findScene(sceneId, function(err, scene) {
-            socket.leave(sceneId); 
+        _findScene(sceneId, function (err, scene) {
+            socket.leave(sceneId);
             if (callback) {
                 callback(err);
             }
         });
     });
 
-    socket.on('sendCommand', function(roomId, commandName, commandValue) {
+    socket.on('sendCommand', function (roomId, commandName, commandValue) {
 
 
         console.log(getDateForLog() + " - hub.js - sendCommand: ", {
@@ -336,7 +336,7 @@ function addApiCalls (hub, io, socket) {
         io.to(roomId).emit('command', {name: commandName, value: commandValue});
     });
 
-    socket.on('register', function(roomId) {
+    socket.on('register', function (roomId) {
 
         roomId = roomId.replace("/#", "");
 
@@ -346,13 +346,13 @@ function addApiCalls (hub, io, socket) {
     });
 }
 
-var Hub = function(config) {
+var Hub = function (config) {
     this.config = config;
     this.db = mongo.connect(config.mongo, ['mediaScenes', 'sessions', 'mediaSceneGraphs']);
     session.setClient(this.db);
 };
 
-Hub.prototype.listen = function(callback) {
+Hub.prototype.listen = function (callback) {
     var self = this,
         app = express(),
         server = http.Server(app),
@@ -366,19 +366,19 @@ Hub.prototype.listen = function(callback) {
     io.set('origins', '*:*');
     io.sockets.on('connection', function (socket) {
 
-        var disconnectTimer = setTimeout(function() {
+        var disconnectTimer = setTimeout(function () {
             socket.disconnect();
         }, 10000);
 
         socket.on('auth', function (creds, callback) {
 
             //APEP: param record - session object from db
-            function succeed (record) {
+            function succeed(record) {
 
                 socket.groupID = record._groupID; //AJF: set the groupID on the socket to be used in further local calls
                 addApiCalls(self, io, socket); //APEP: attach all the socket listeners
                 //APEP: for admin sockets, we can provide some additional socket listeners
-                if(record._groupID === 0) {
+                if (record._groupID === 0) {
                     adminApiCalls(self, io, socket, session);
                 }
                 clearTimeout(disconnectTimer); //APEP: ensure we stop the fail safe of closing an unauthenticated socket
@@ -386,11 +386,11 @@ Hub.prototype.listen = function(callback) {
 
                 console.log("auth - suceed - calling back:");
                 // APEP logging and test if callback exists - used due to error in android platform
-                if(callback)
+                if (callback)
                     callback(null, record._id.toString(), roomId, record._groupID.toString());//AJF: try to return the groupID...
             }
 
-            function fail (msg) {
+            function fail(msg) {
                 callback(msg);
                 socket.disconnect();
             }
@@ -399,7 +399,7 @@ Hub.prototype.listen = function(callback) {
                 //AJF: Compares the passwords and determines what group the user logging into belongs to
                 var userGroup = checkPasswordKeyAndGetGroup(creds.password, self.config);
 
-                if ( userGroup !== -1 ) {
+                if (userGroup !== -1) {
                     session.create(userGroup, throwErr(succeed));
                 } else {
                     fail('Invalid Password');
@@ -407,29 +407,29 @@ Hub.prototype.listen = function(callback) {
 
             } else if (creds.hasOwnProperty('token') && creds.token && creds.token !== '') {
                 console.log("Finding session via token");
-                session.find(creds.token, function(err, data) {
-                        if (data) {
-                            succeed(data);
-                        } else {
-                            fail('Invalid Token');
-                        }
-                    });
+                session.find(creds.token, function (err, data) {
+                    if (data) {
+                        succeed(data);
+                    } else {
+                        fail('Invalid Token');
+                    }
+                });
             } else {
                 fail('Password must be provided');
             }
         });
-        
+
     });
 
     server.listen(self.config.port, callback);
 };
 
-Hub.prototype.close = function(cb) {
-    this.server.close(cb);   
+Hub.prototype.close = function (cb) {
+    this.server.close(cb);
 };
 
-module.exports = { 
-    createHub: function(mongoUrl) {
+module.exports = {
+    createHub: function (mongoUrl) {
         return new Hub(mongoUrl);
     }
 };
