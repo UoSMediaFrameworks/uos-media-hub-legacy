@@ -69,7 +69,7 @@ function isCredsForUsernameAndPasswordCheck(creds) {
 
 function isCredsForPasswordOnlyCheck(creds) {
     var passwordField = creds.hasOwnProperty('password') && creds.password && creds.password !== '';
-    var usernameField = creds.hasOwnProperty('username') && creds.username === '';
+    var usernameField = (creds.hasOwnProperty('username') && creds.username === '') || !creds.hasOwnProperty('username');
 
     return passwordField && usernameField;
 }
