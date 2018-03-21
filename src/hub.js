@@ -60,6 +60,39 @@ function validateSceneGraph(sceneGraphData) {
     return sceneGraphData;
 }
 
+function isCredsForUsernameAndPasswordCheck(creds) {
+    var passwordField = (creds.hasOwnProperty('password') && creds.password) && creds.password !== '';
+    var usernameField = (creds.hasOwnProperty('username') && creds.username) && creds.username !== '';
+
+    return passwordField && usernameField;
+}
+
+function isCredsForPasswordOnlyCheck(creds) {
+    var passwordField = creds.hasOwnProperty('password') && creds.password && creds.password !== '';
+    var usernameField = creds.hasOwnProperty('username') && creds.username === '';
+
+    return passwordField && usernameField;
+}
+
+function isCredsForTokenCheck(creds) {
+    return creds.hasOwnProperty('token') && creds.token && creds.token !== '';
+}
+
+function checkUsersCredsAgainstUsersTable(db, username, password, cb) {
+    try {
+        var collection = db.collection('usersWithGroup');
+        collection.findOne({username: username}, function (err, user) {
+            if(user !== null && bcrypt.compareSync(password, user.password)) {
+                cb(user.groupID);
+            } else {
+                cb(-1);
+            }
+        });
+    }  catch (e) {
+        cb(-1);
+    }
+}
+
 function checkPasswordKeyAndGetGroup(password, config) {
 
     try {
@@ -130,23 +163,33 @@ function adminApiCalls(hub, io, socket, session) {
             return callback(null, record._id.toString(), roomId, record._groupID.toString());
         }
 
-        if (creds.hasOwnProperty('password') && creds.password && creds.password !== '') {
+        if (isCredsForUsernameAndPasswordCheck(creds)) {
+            //AJF: Compares the passwords and determines what group the user logging into belongs to
+            checkUsersCredsAgainstUsersTable(hub.db, creds.username, creds.password, function(userGroup) {
+                if (userGroup !== -1) {
+                    session.create(userGroup, function (err, data) {
+                        if (data) {
+                            succeed(data);
+                        } else {
+                            return callback(err);
+                        }
+                    });
+                } else {
+                    console.log("AuthProvider - calling back invalid password - not found");
+                    return callback('Invalid Password', null, null, null);
+                }
+            });
+        } else if (isCredsForPasswordOnlyCheck(creds)) {
             //AJF: Compares the passwords and determines what group the user logging into belongs to
             var userGroup = checkPasswordKeyAndGetGroup(creds.password, hub.config);
 
             if (userGroup !== -1) {
-                session.create(userGroup, function (err, data) {
-                    if (data) {
-                        succeed(data);
-                    } else {
-                        return callback(err);
-                    }
-                });
+                session.create(userGroup, throwErr(succeed));
             } else {
                 console.log("AuthProvider - calling back invalid password - not found");
                 return callback('Invalid Password', null, null, null);
             }
-        } else if (creds.hasOwnProperty('token') && creds.token && creds.token !== '') {
+        } else if (isCredsForTokenCheck(creds)) {
             console.log("AuthProvider - Finding session via token");
             session.find(creds.token, function (err, data) {
                 if (data) {
@@ -395,7 +438,18 @@ Hub.prototype.listen = function (callback) {
                 socket.disconnect();
             }
 
-            if (creds.hasOwnProperty('password') && creds.password && creds.password !== '') {
+
+
+            if (isCredsForUsernameAndPasswordCheck(creds)) {
+                //AJF: Compares the passwords and determines what group the user logging into belongs to
+                checkUsersCredsAgainstUsersTable(self.db, creds.username, creds.password, function(userGroup) {
+                    if (userGroup !== -1) {
+                        session.create(userGroup, throwErr(succeed));
+                    } else {
+                        fail('Invalid Password');
+                    }
+                });
+            } else if (isCredsForPasswordOnlyCheck(creds)) {
                 //AJF: Compares the passwords and determines what group the user logging into belongs to
                 var userGroup = checkPasswordKeyAndGetGroup(creds.password, self.config);
 
@@ -404,8 +458,7 @@ Hub.prototype.listen = function (callback) {
                 } else {
                     fail('Invalid Password');
                 }
-
-            } else if (creds.hasOwnProperty('token') && creds.token && creds.token !== '') {
+            } else if (isCredsForTokenCheck(creds)) {
                 console.log("Finding session via token");
                 session.find(creds.token, function (err, data) {
                     if (data) {
