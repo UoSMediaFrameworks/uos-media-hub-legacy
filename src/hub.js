@@ -176,7 +176,7 @@ function adminApiCalls(hub, io, socket, session) {
                     });
                 } else {
                     console.log("AuthProvider - calling back invalid password - not found");
-                    return callback('Invalid Password', null, null, null);
+                    return callback('Invalid Username or Password', null, null, null);
                 }
             });
         } else if (isCredsForPasswordOnlyCheck(creds)) {
@@ -446,7 +446,7 @@ Hub.prototype.listen = function (callback) {
                     if (userGroup !== -1) {
                         session.create(userGroup, throwErr(succeed));
                     } else {
-                        fail('Invalid Password');
+                        fail('Invalid Username or Password');
                     }
                 });
             } else if (isCredsForPasswordOnlyCheck(creds)) {

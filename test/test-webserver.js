@@ -32,7 +32,7 @@ try {
 
 
 var hub = require(__dirname + '/../src/hub'),
-    assert = require('assert'),
+        assert = require('assert'),
     io = require('socket.io-client'),
     async = require('async'),
     _ = require('lodash'),
@@ -119,7 +119,12 @@ describe('Hub', function () {
                 }
 
                 function insertUser(cb) {
-                    var testUser = {username: "test-user", password: bcrypt.hashSync("test0101"), groupID:0, groupName: "admin"};
+                    var testUser = {
+                        username: "test-user",
+                        password: bcrypt.hashSync("test0101"),
+                        groupID: 0,
+                        groupName: "admin"
+                    };
                     var collection = hubApp.db.collection('usersWithGroup');
                     collection.insert(testUser, function (err, result) {
                         assert(err === null);
@@ -141,7 +146,10 @@ describe('Hub', function () {
                             var self = this;
                             this.socket.emit('auth', {username: 'test-user', password: 'test0101'}, function (err, t) {
 
-                                self.socket.emit('authProvider', {username: 'test-user', password: 'test0101'}, function (err, token) {
+                                self.socket.emit('authProvider', {
+                                    username: 'test-user',
+                                    password: 'test0101'
+                                }, function (err, token) {
                                     var sock2 = io(hubUrl, socketOps);
                                     sock2.on('connect', function () {
                                         sock2.emit('auth', {token: token}, function (err, secondToken) {
@@ -155,7 +163,7 @@ describe('Hub', function () {
                         }.bind(this));
                     });
 
-                    it('should provide valid password for auth from the secret keys', function(done) {
+                    it('should provide valid password for auth from the secret keys', function (done) {
                         var self = this;
                         this.socket.emit('auth', {password: 'kittens'}, function (err, t) {
                             self.socket.emit('authProvider', {password: 'kittens'}, function (err, token) {
@@ -170,7 +178,7 @@ describe('Hub', function () {
                         });
                     });
 
-                    it('should provide valid password for auth from the secret keys with empty username', function(done) {
+                    it('should provide valid password for auth from the secret keys with empty username', function (done) {
                         var self = this;
                         this.socket.emit('auth', {username: '', password: 'kittens'}, function (err, t) {
                             self.socket.emit('authProvider', {username: '', password: 'kittens'}, function (err, token) {
@@ -200,6 +208,81 @@ describe('Hub', function () {
                     });
                 });
 
+                describe('"authProvider", {username:<invalid username>,password:<invalid password>}', function () {
+                    before(function (done) {
+                        validateUsersCollectionEmpty(function () {
+                            insertUser(done);
+                        });
+                    });
+                    it('should provide invalid username or password authentication', function (done) {
+                        this.timeout(7000);
+                        var self = this;
+                        this.socket.emit('auth', {password: 'kittens'}, function (err, t) {
+                            assert(!err,"auth with password and username success");
+                            self.socket.emit('authProvider', {password: 'invalid',username:'invalid'}, function (err, token) {
+                                assert(err,"the username or password was invalid");
+                                done();
+                            });
+                        });
+                    });
+                });
+
+                describe('"authProvider", {username:<valid username>,password:<invalid password>}', function () {
+                    before(function (done) {
+                        validateUsersCollectionEmpty(function () {
+                            insertUser(done);
+                        });
+                    });
+                    it('should provide valid username and invalid password authentication', function (done) {
+                        this.timeout(7000);
+                        var self = this;
+                        this.socket.emit('auth', {password: 'kittens'}, function (err, t) {
+                            self.socket.emit('authProvider', {password: 'invalid',username:'test-user'}, function (err, token) {
+                                assert(err,"wrong password");
+                                done();
+                            });
+                        });
+                    });
+                });
+
+                describe('"authProvider", {username:<invalid username>,password:<valid password>}', function () {
+                    before(function (done) {
+                        validateUsersCollectionEmpty(function () {
+                            insertUser(done);
+                        });
+                    });
+                    it('should provide invalid username but valid password authentication', function (done) {
+                        this.timeout(7000);
+                        var self = this;
+                        this.socket.emit('auth', {password: 'kittens'}, function (err, t) {
+                            self.socket.emit('authProvider', {password: 'test0101',username:'invalid'}, function (err, token) {
+                                assert(err,"username does not exist or wrong username and password error");
+                                done();
+                            });
+                        });
+                    });
+                });
+
+                describe('"authProvider", {username:<valid username>,password:<valid password>}', function () {
+                    before(function (done) {
+                        validateUsersCollectionEmpty(function () {
+                            insertUser(done);
+                        });
+                    });
+                    it('should provide valid username and password authentication', function (done) {
+                        this.timeout(7000);
+                        var self = this;
+                        this.socket.emit('auth', {password: 'kittens'}, function (err, t) {
+                            self.socket.emit('authProvider',{
+                                username: 'test-user',
+                                password: 'test0101'
+                            }, function (err, token) {
+                                assert(token,"token received for valid account details");
+                                done();
+                            });
+                        });
+                    });
+                });
                 describe('"authProvider", {token: <valid token>', function () {
 
                     it('should provide invalid password for authentication', function (done) {
