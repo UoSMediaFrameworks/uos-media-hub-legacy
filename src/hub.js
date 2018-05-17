@@ -369,14 +369,17 @@ function addApiCalls(hub, io, socket) {
 
     socket.on('sendCommand', function (roomId, commandName, commandValue) {
 
-
-        console.log(getDateForLog() + " - hub.js - sendCommand: ", {
+        console.log(`${getDateForLog()} - hub.js - sendCommand: ${JSON.stringify({ 
             roomId: roomId,
             commandName: commandName,
             commandValue: commandValue
-        });
+        })}`);
 
-        io.to(roomId).emit('command', {name: commandName, value: commandValue});
+        // io.to(roomId).emit('command', {name: commandName, value: commandValue});
+
+        // APEP 160518 we are moving away the hub having to talk directly using socket io rooms
+        // APEP this is a broadcast to all socket io clients (ie all controllers or software interested)
+        socket.broadcast.emit('command', {name: commandName, value: commandValue});
     });
 
     socket.on('register', function (roomId) {
@@ -391,8 +394,10 @@ function addApiCalls(hub, io, socket) {
 
 var Hub = function (config) {
     this.config = config;
-    this.db = mongo.connect(config.mongo, ['mediaScenes', 'sessions', 'mediaSceneGraphs']);
+    this.db = mongo(config.mongo, ['mediaScenes', 'sessions', 'mediaSceneGraphs']);
     session.setClient(this.db);
+
+    console.log("Created a hub and connected to the database.")
 };
 
 Hub.prototype.listen = function (callback) {
@@ -408,6 +413,8 @@ Hub.prototype.listen = function (callback) {
     // allow cross origin requests
     io.set('origins', '*:*');
     io.sockets.on('connection', function (socket) {
+
+        console.log("A connection has been made");
 
         var disconnectTimer = setTimeout(function () {
             socket.disconnect();
@@ -438,9 +445,10 @@ Hub.prototype.listen = function (callback) {
                 socket.disconnect();
             }
 
-
-
             if (isCredsForUsernameAndPasswordCheck(creds)) {
+
+                console.log("Checking new connection auth for username and password");
+
                 //AJF: Compares the passwords and determines what group the user logging into belongs to
                 checkUsersCredsAgainstUsersTable(self.db, creds.username, creds.password, function(userGroup) {
                     if (userGroup !== -1) {
@@ -450,6 +458,9 @@ Hub.prototype.listen = function (callback) {
                     }
                 });
             } else if (isCredsForPasswordOnlyCheck(creds)) {
+
+                console.log("Checking new connection auth using password only");
+
                 //AJF: Compares the passwords and determines what group the user logging into belongs to
                 var userGroup = checkPasswordKeyAndGetGroup(creds.password, self.config);
 
@@ -473,6 +484,9 @@ Hub.prototype.listen = function (callback) {
         });
 
     });
+
+
+    console.log(`Starting a server on port ${self.config.port}`);
 
     server.listen(self.config.port, callback);
 };
