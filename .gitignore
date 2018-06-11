@@ -4,8 +4,3 @@
 /scripts/env.sh
 /scripts/old-data/**
 /dev-env.sh
-env.bat
-scripts/media-download-for-local/video-media-objects-for-download.json
-scripts/media-download-for-local/image-media-objects-for-download.json
-scripts/media-download-for-local/bash.exe.stackdump
-scripts/media-download-for-local/audio-media-objects-for-download.json
