@@ -13,13 +13,23 @@ var config = {
     mongo: process.env.HUB_MONGO
 };
 
-var db = mongo.connect(config.mongo, ['mediaScenes', 'imagemediaobjects', 'videomediaobjects']);
+console.log("Connecting to MongoDB");
+console.log(config.mongo);
+var db = mongo( config.mongo, ['mediaScenes', 'imagemediaobjects', 'videomediaobjects']); //TODO add a fail to connect handler
 
 const BLOB_STORAGE_HOST = "uosassetstore.blob.core.windows.net";
 
-var sceneId = "58d2e9a5595a37c8a76cdfe8";
+var sceneId = "587f7ce1d145b604133db205";
+
+console.log("Connected to MongoDB");
 
 processScene();
+
+console.log("Done");
+
+//Call process.exit(); as a callback from processScene?
+
+
 
 function processScene() {
     db.mediaScenes.findOne({"_id": mongo.ObjectId(sceneId)}, function(err, scene){
@@ -27,18 +37,23 @@ function processScene() {
 
         var images = [];
         var videos = [];
+        var audios = [];
 
         _.forEach(scene.scene, function(mo){
             if(mo.type === "video" && mo.url.indexOf(BLOB_STORAGE_HOST) !== -1) {
                 videos.push(mo);
-                
             } else if(mo.type === "image" && mo.url.indexOf(BLOB_STORAGE_HOST) !== -1) {
                 images.push(mo);
+            } else if(mo.type === "audio" && mo.url.indexOf(BLOB_STORAGE_HOST) !== -1) {
+                audios.push(mo);
             }
         });
 
+        //So much reuse of code - refactor
+
         collectVideoMediaObjects(videos);
         collectImageMediaObjects(images);
+        collectAudioMediaObjects(audios);
     });
 }
 
@@ -63,7 +78,7 @@ function collectImageMediaObjectsFromDb(imoIds) {
 
         console.log("imos: ", imos);
 
-        fs.writeFile('media-download-for-local/image-media-objects-for-download.json', JSON.stringify(imos), 'utf8', function() {
+        fs.writeFile('image-media-objects-for-download.json', JSON.stringify(imos), 'utf8', function() {
             console.log("imos - record file created");
         });
     });
@@ -94,12 +109,39 @@ function collectVideoMediaObjectsFromDb(vmoIds) {
         
         console.log("vmos: ", vmos);
 
-        fs.writeFile('media-download-for-local/video-media-objects-for-download.json', JSON.stringify(vmos), 'utf8', function() {
+        fs.writeFile('video-media-objects-for-download.json', JSON.stringify(vmos), 'utf8', function() {
             console.log("vmos - record file created");
         });
     });
 }
 
+function collectAudioMediaObjects(audios) {
 
+    var audioMediaIds = [];
+    _.forEach(audios, function(amo) {
 
+        // APEP ensure that it is in the raw folder... some media seems to have gone in the wrong bucket, we really need to resolve this
+        if(amo.url.indexOf("assetstoredev/audio/raw") !== -1) {
+            var audioUrlWithoutHostAndFileSystem = amo.url.replace("https://uosassetstore.blob.core.windows.net/assetstoredev/audio/raw/", "");
+            var urlSplit = audioUrlWithoutHostAndFileSystem.split("/");
+            var amoId = urlSplit[0];
+            audioMediaIds.push(mongo.ObjectId(amoId));
+        }
+    });
 
+    console.log("audioMediaIds: ", audioMediaIds);
+
+    collectAudioMediaObjectsFromDb(audioMediaIds);
+}
+
+function collectAudioMediaObjectsFromDb(amoIds) {
+    db.audiomediaobjects.find({"_id": { "$in": amoIds}}, function(err, amos){
+        if(err) throw err;
+
+        console.log("amos: ", amos);
+
+        fs.writeFile('audio-media-objects-for-download.json', JSON.stringify(amos), 'utf8', function() {
+            console.log("amos - record file created");
+        });
+    });
+}
