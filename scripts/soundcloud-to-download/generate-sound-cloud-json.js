@@ -66,22 +66,22 @@ db.mediaScenes.find({"_groupID": { "$in": gdcGroups}}, function(err, scenes) {
         function(cb) {
             //console.log("create-soundcloud-urls-in-scenes-index - sceneSoundCloudRecords ", sceneSoundCloudRecords);
             console.log("soundCloudObjectCount: ", soundCloudObjectCount);
-            fs.writeFile('../soundcloud-to-download/scene_soundcloud_records.txt', sceneSoundCloudString, 'utf8', function(){
-                console.log("scene_soundcloud_records.txt file created");
+            fs.writeFile('scripts/soundcloud-to-download/angel/scene_soundcloud_records.txt', sceneSoundCloudString, 'utf8', function(err){
+                console.log("scene_soundcloud_records.txt file created",err);
                 cb();
             });
         },
         function(cb) {
             //console.log("create-vimeo-urls-in-scenes-index - sceneSoundCloudRecords ", sceneSoundCloudRecords);
-            fs.writeFile('../soundcloud-to-download/scene_soundcloud_records.json', JSON.stringify(sceneSoundCloudRecords), 'utf8', function(){
-                console.log("scene_soundcloud_records.json file created");
+            fs.writeFile('scripts/soundcloud-to-download/angel/scene_soundcloud_records.json', JSON.stringify(sceneSoundCloudRecords), 'utf8', function(err){
+                console.log("scene_soundcloud_records.json file created",err);
                 cb();
             });
         },
         function(cb) {
             console.log("uniqueCount: ", uniqueCount);
-            fs.writeFile('../soundcloud-to-download/scene_soundcloud_records_duplicates.json', JSON.stringify(audioUrlDuplicateDetector), 'utf8', function(){
-                console.log("scene_soundcloud_records_duplicates.json file created");
+            fs.writeFile('scripts/soundcloud-to-download/angel/scene_soundcloud_records_duplicates.json', JSON.stringify(audioUrlDuplicateDetector), 'utf8', function(err){
+                console.log("scene_soundcloud_records_duplicates.json file created",err);
                 cb();
             });
         }
